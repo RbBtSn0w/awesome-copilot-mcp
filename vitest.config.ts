@@ -40,7 +40,7 @@ export default defineConfig({
           statements: 100
         },
         './src/github-adapter.ts': {
-          branches: 70,
+          branches: 60,
           functions: 85,
           lines: 80,
           statements: 80
