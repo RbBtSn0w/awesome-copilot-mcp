@@ -46,6 +46,9 @@ jobs:
     needs: test
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    permissions:
+      contents: read
+      id-token: write # Required for NPM provenance and Granular Token OIDC
 
     steps:
     - uses: actions/checkout@v4
@@ -64,6 +67,12 @@ jobs:
       run: npm run build
 
     - name: Publish to npm
-      run: npm publish --tag beta
+      run: |
+        if [ -z "$NODE_AUTH_TOKEN" ]; then
+          echo "Error: NPM_TOKEN secret is missing!"
+          exit 1
+        fi
+        npm ping
+        npm publish --tag beta --provenance --access public
       env:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
