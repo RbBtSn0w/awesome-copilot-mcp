@@ -18,6 +18,7 @@
     "clean": "rm -rf dist coverage",
     "dev": "tsc --watch",
     "generate-metadata": "node scripts/generate-metadata.js",
+    "generate-metadata:lean": "node scripts/generate-metadata.js",
     "generate-metadata:local": "node scripts/generate-metadata.js --local-repo awesome-copilot-source",
     "generate-metadata:verify": "node scripts/generate-metadata.js --verify",
     "generate-metadata:check-updates": "node scripts/generate-metadata.js --check-updates",
