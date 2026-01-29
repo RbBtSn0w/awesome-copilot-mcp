@@ -52,7 +52,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/RbBtSn0w/awesome-copilot-mcp.git"
+    "url": "git+https://github.com/RbBtSn0w/awesome-copilot-mcp.git"
   },
   "bugs": {
     "url": "https://github.com/RbBtSn0w/awesome-copilot-mcp/issues"

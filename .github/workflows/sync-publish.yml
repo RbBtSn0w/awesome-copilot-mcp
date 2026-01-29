@@ -10,6 +10,8 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write # Needed to push version bump back to repo
+      id-token: write # Required for NPM provenance and Granular Token OIDC
+
     
     steps:
     - uses: actions/checkout@v4
@@ -51,11 +53,17 @@ jobs:
       run: |
         npm version patch -m "chore: release v%s (upstream sync)"
 
-    - name: Publish to NPM (if updated)
+    - name: Verify Token & Publish
       if: steps.check.outputs.updated == 'true'
       env:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-      run: npm publish
+      run: |
+        if [ -z "$NODE_AUTH_TOKEN" ]; then
+          echo "Error: NPM_TOKEN secret is missing!"
+          exit 1
+        fi
+        npm ping
+        npm publish --provenance --access public
 
     - name: Push Changes (if updated)
       if: steps.check.outputs.updated == 'true'
