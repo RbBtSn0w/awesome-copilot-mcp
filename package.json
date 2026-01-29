@@ -14,7 +14,7 @@
   },
   "scripts": {
     "version": "node scripts/update-cli-version.js",
-    "build": "tsc -p tsconfig.build.json",
+    "build": "tsc -p tsconfig.build.json && chmod +x dist/cli.js",
     "clean": "rm -rf dist coverage",
     "dev": "tsc --watch",
     "generate-metadata": "node scripts/generate-metadata.js --local-repo awesome-copilot-source",
