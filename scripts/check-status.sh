@@ -85,6 +85,8 @@ check_item "vitest.config.mts 存在" "[ -f vitest.config.mts ]"
 check_item "scripts/ 目录存在" "[ -d scripts ]"
 check_item "scripts/generate-metadata.js 存在" "[ -f scripts/generate-metadata.js ]"
 check_item ".eslintrc.json 存在" "[ -f .eslintrc.json ]"
+check_item "release.config.js 存在" "[ -f release.config.js ]"
+check_item "commitlint.config.js 存在" "[ -f commitlint.config.js ]"
 echo ""
 
 # 7. 性能输出
