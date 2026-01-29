@@ -13,6 +13,7 @@
     "awesome-copilot-mcp": "dist/cli.js"
   },
   "scripts": {
+    "version": "node scripts/update-cli-version.js",
     "build": "tsc -p tsconfig.build.json",
     "clean": "rm -rf dist coverage",
     "dev": "tsc --watch",
