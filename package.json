@@ -1,6 +1,6 @@
 {
   "name": "awesome-copilot-mcp",
-  "version": "1.0.0-beta.1",
+  "version": "0.0.1-beta",
   "description": "Model Context Protocol server for awesome-copilot agents and collections",
   "main": "dist/index.js",
   "files": [
@@ -51,12 +51,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/github/awesome-copilot-mcp.git"
+    "url": "https://github.com/RbBtSn0w/awesome-copilot-mcp.git"
   },
   "bugs": {
-    "url": "https://github.com/github/awesome-copilot-mcp/issues"
+    "url": "https://github.com/RbBtSn0w/awesome-copilot-mcp/issues"
   },
-  "homepage": "https://github.com/github/awesome-copilot-mcp#readme",
+  "homepage": "https://github.com/RbBtSn0w/awesome-copilot-mcp#readme",
   "engines": {
     "node": ">=18.0.0"
   },

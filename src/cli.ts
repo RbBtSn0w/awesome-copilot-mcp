@@ -17,7 +17,7 @@ const program = new Command();
 program
   .name('awesome-copilot-mcp')
   .description('Model Context Protocol server for awesome-copilot agents and collections')
-  .version('1.0.0-beta.1');
+  .version('0.0.1-beta');
 
 // Global options
 program

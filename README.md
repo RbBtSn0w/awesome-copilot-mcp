@@ -2,7 +2,7 @@
 
 [![npm version](https://img.shields.io/npm/v/awesome-copilot-mcp)](https://www.npmjs.com/package/awesome-copilot-mcp)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Build Status](https://github.com/github/awesome-copilot-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/github/awesome-copilot-mcp/actions)
+[![Build Status](https://github.com/RbBtSn0w/awesome-copilot-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/RbBtSn0w/awesome-copilot-mcp/actions)
 
 A Model Context Protocol (MCP) server that provides access to [awesome-copilot](https://github.com/github/awesome-copilot) agents and collection resources.
 
