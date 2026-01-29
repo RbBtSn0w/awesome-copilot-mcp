@@ -1,0 +1,87 @@
+{
+  "name": "awesome-copilot-mcp",
+  "version": "1.0.0-beta.1",
+  "description": "Model Context Protocol server for awesome-copilot agents and collections",
+  "main": "dist/index.js",
+  "files": [
+    "dist",
+    "metadata.json",
+    "README.md",
+    "LICENSE"
+  ],
+  "bin": {
+    "awesome-copilot-mcp": "dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "clean": "rm -rf dist coverage",
+    "dev": "tsc --watch",
+    "generate-metadata": "node scripts/generate-metadata.js",
+    "generate-metadata:local": "node scripts/generate-metadata.js --local-repo awesome-copilot-source",
+    "generate-metadata:verify": "node scripts/generate-metadata.js --verify",
+    "generate-metadata:check-updates": "node scripts/generate-metadata.js --check-updates",
+    "check:metadata-size": "node scripts/check-metadata-size.js",
+    "archive:reports": "node scripts/archive-reports.js",
+    "lint": "eslint src/**/*.ts",
+    "lint:fix": "eslint src/**/*.ts --fix",
+    "typecheck": "tsc --noEmit -p tsconfig.build.json",
+    "prepare": "npm run generate-metadata",
+    "prepublishOnly": "npm run clean && npm run generate-metadata:local && npm run build && npm run test:coverage",
+    "ci": "npm run clean && npm run build && npm run lint && npm run test:coverage",
+    "start": "node dist/cli.js start",
+    "start-http": "node dist/cli.js start-http",
+    "start-http:debug": "npm run build && node dist/cli.js start-http --port 8080 --host 127.0.0.1",
+    "debug:cli": "node dist/cli.js debug",
+    "inspect:stdio": "npm run build && npx -y @modelcontextprotocol/inspector node dist/cli.js start",
+    "inspect:http": "npm run build && (node dist/cli.js start-http --port 8080 --host 127.0.0.1 &) && sleep 2 && npx -y @modelcontextprotocol/inspector --transport streamable-http --url http://127.0.0.1:8080/mcp",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:performance": "vitest run test/metadata-performance.test.ts"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "ai",
+    "agents",
+    "awesome-copilot",
+    "github-copilot"
+  ],
+  "author": "Awesome Copilot MCP Contributors",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/github/awesome-copilot-mcp.git"
+  },
+  "bugs": {
+    "url": "https://github.com/github/awesome-copilot-mcp/issues"
+  },
+  "homepage": "https://github.com/github/awesome-copilot-mcp#readme",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.25.1",
+    "axios": "^1.6.0",
+    "chalk": "^5.3.0",
+    "commander": "^12.0.0",
+    "dedent": "^1.7.1",
+    "fs-extra": "^11.2.0",
+    "winston": "^3.11.0"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/fs-extra": "^11.0.4",
+    "@types/js-yaml": "^4.0.9",
+    "@types/lodash": "^4.14.202",
+    "@types/node": "^20.19.27",
+    "@types/supertest": "^2.0.16",
+    "@typescript-eslint/eslint-plugin": "^8.50.0",
+    "@typescript-eslint/parser": "^8.50.0",
+    "@vitest/coverage-v8": "^4.0.16",
+    "eslint": "^8.57.1",
+    "supertest": "^6.3.4",
+    "typescript": "^5.3.0",
+    "vitest": "^4.0.16"
+  }
+}

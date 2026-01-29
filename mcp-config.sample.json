@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "awesome-copilot": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "awesome-copilot-mcp",
+        "start"
+      ],
+      "env": {
+        "ACP_CACHE_TTL": "3600"
+      }
+    }
+  }
+}

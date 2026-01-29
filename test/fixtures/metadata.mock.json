@@ -1,0 +1,96 @@
+{
+    "version": "1.0.0-test",
+    "generatedAt": "2024-01-07T00:00:00Z",
+    "source": "test-fixture",
+    "agents": [
+        {
+            "name": "test-agent",
+            "description": "Test agent for unit tests with React expertise",
+            "tags": [
+                "test",
+                "mock",
+                "react"
+            ],
+            "path": "agents/test-agent.agent.md",
+            "url": "https://github.com/github/awesome-copilot/blob/main/agents/test-agent.agent.md",
+            "type": "agent"
+        },
+        {
+            "name": "python-dev",
+            "description": "Python developer agent for testing",
+            "tags": [
+                "test",
+                "python"
+            ],
+            "path": "agents/python-dev.agent.md",
+            "url": "https://github.com/github/awesome-copilot/blob/main/agents/python-dev.agent.md",
+            "type": "agent"
+        }
+    ],
+    "prompts": [
+        {
+            "name": "test-prompt",
+            "description": "Test prompt for code generation",
+            "tags": [
+                "test",
+                "code"
+            ],
+            "path": "prompts/test-prompt.prompt.md",
+            "url": "https://github.com/github/awesome-copilot/blob/main/prompts/test-prompt.prompt.md",
+            "type": "prompt"
+        }
+    ],
+    "instructions": [
+        {
+            "name": "test-instructions",
+            "description": "Test coding standards",
+            "tags": [
+                "test",
+                "standards"
+            ],
+            "path": "instructions/test-instructions.instructions.md",
+            "url": "https://github.com/github/awesome-copilot/blob/main/instructions/test-instructions.instructions.md",
+            "type": "instruction"
+        }
+    ],
+    "skills": [
+        {
+            "name": "test-skill",
+            "description": "Test skill for validation",
+            "tags": [
+                "test"
+            ],
+            "path": "skills/test-skill/SKILL.md",
+            "files": [
+                "SKILL.md",
+                "examples/demo.js"
+            ],
+            "url": "https://github.com/github/awesome-copilot/blob/main/skills/test-skill/SKILL.md",
+            "type": "skill"
+        }
+    ],
+    "collections": [
+        {
+            "id": "test-collection",
+            "name": "test-collection",
+            "description": "Test collection of resources",
+            "tags": [
+                "test"
+            ],
+            "items": [
+                {
+                    "path": "agents/test-agent.agent.md",
+                    "kind": "agent"
+                },
+                {
+                    "path": "prompts/test-prompt.prompt.md",
+                    "kind": "prompt"
+                }
+            ],
+            "path": "collections/test-collection.collection.yml",
+            "url": "https://github.com/github/awesome-copilot/blob/main/collections/test-collection.collection.yml",
+            "type": "collection"
+        }
+    ],
+    "lastUpdated": "2024-01-07T00:00:00Z"
+}
