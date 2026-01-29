@@ -5,6 +5,7 @@ on:
     branches: [ main, develop ]
   pull_request:
     branches: [ main, develop ]
+  workflow_dispatch: # Allow manual trigger for beta releases
 
 jobs:
   test:
@@ -45,7 +46,8 @@ jobs:
   publish:
     needs: test
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    # Only run publish on manual trigger from main branch
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
     permissions:
       contents: read
       id-token: write # Required for NPM provenance and Granular Token OIDC
@@ -62,6 +64,14 @@ jobs:
 
     - name: Install dependencies
       run: npm ci
+
+    - name: Set Beta Version
+      run: |
+        # Generate timestamp in YYYYMMDDHHmm format
+        TIMESTAMP=$(date +%Y%m%d%H%M)
+        # Update version to 0.0.1-beta.202401292130
+        npm version prerelease --preid=beta.${TIMESTAMP} --no-git-tag-version
+        echo "Version set to $(node -p "require('./package.json').version")"
 
     - name: Publish to npm
       env:
