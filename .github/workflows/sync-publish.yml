@@ -42,7 +42,7 @@ jobs:
       if: steps.check.outputs.updated == 'true'
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: npm run generate-metadata:lean
+      run: npm run generate-metadata
 
     - name: Verify Build (if updated)
       if: steps.check.outputs.updated == 'true'
@@ -68,11 +68,4 @@ jobs:
     - name: Push Changes (if updated)
       if: steps.check.outputs.updated == 'true'
       run: |
-        git add .upstream-sync
-        # Metadata is ignored, but package.json and package-lock.json are updated by npm version
-        # npm version automatically creates a commit, we just need to amend or push it
-        # Actually npm version creates the commit with the tag.
-        # But we also modified .upstream-sync which is NOT part of that commit yet.
-        # Let's amend the version commit to include .upstream-sync
-        git commit --amend --no-edit .upstream-sync
         git push origin main --follow-tags

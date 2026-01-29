@@ -63,9 +63,6 @@ jobs:
     - name: Install dependencies
       run: npm ci
 
-    - name: Build
-      run: npm run build
-
     - name: Publish to npm
       run: |
         if [ -z "$NODE_AUTH_TOKEN" ]; then
@@ -76,3 +73,4 @@ jobs:
         npm publish --tag beta --provenance --access public
       env:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

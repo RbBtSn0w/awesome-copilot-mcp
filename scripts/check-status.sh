@@ -68,6 +68,7 @@ echo ""
 # 4. 文档检查
 echo -e "${BLUE}📚 文档检查${NC}"
 check_item "README.md 存在" "[ -f README.md ]"
+check_item "metadata.json 存在" "[ -f metadata.json ]"
 # check_item "QUICK_START.md 存在" "[ -f QUICK_START.md ]" # Removed as it might not exist
 echo ""
 
@@ -80,10 +81,9 @@ echo ""
 
 # 6. 配置检查
 echo -e "${BLUE}⚙️  配置检查${NC}"
-check_item "vitest.config.ts 存在" "[ -f vitest.config.ts ]"
+check_item "vitest.config.mts 存在" "[ -f vitest.config.mts ]"
 check_item "scripts/ 目录存在" "[ -d scripts ]"
 check_item "scripts/generate-metadata.js 存在" "[ -f scripts/generate-metadata.js ]"
-check_item "scripts/archive-reports.js 存在" "[ -f scripts/archive-reports.js ]"
 check_item ".eslintrc.json 存在" "[ -f .eslintrc.json ]"
 echo ""
 

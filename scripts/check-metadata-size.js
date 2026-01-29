@@ -10,7 +10,7 @@ const fs = require('fs');
 const path = require('path');
 
 const os = require('os');
-const metadataPath = path.resolve(os.homedir(), '.cache', 'awesome-copilot-mcp', 'metadata.json');
+const metadataPath = path.resolve(__dirname, '..', 'metadata.json');
 const recommendedThresholdMB = Number(process.env.METADATA_RECOMMENDED_MB || 3);
 const warningThresholdMB = Number(process.env.METADATA_WARNING_MB || 5);
 const criticalThresholdMB = Number(process.env.METADATA_CRITICAL_MB || 10);

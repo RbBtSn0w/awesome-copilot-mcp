@@ -31,7 +31,14 @@ try {
 
     // 5. Git add (so it's part of the version commit)
     execSync(`git add "${CLI_TS}"`);
-    console.log(`Updated and staged src/cli.ts`);
+
+    // 6. Also stage .upstream-sync if it was updated
+    const UPSTREAM_SYNC = path.join(__dirname, '..', '.upstream-sync');
+    if (fs.existsSync(UPSTREAM_SYNC)) {
+        execSync(`git add "${UPSTREAM_SYNC}"`);
+    }
+
+    console.log(`Updated and staged version changes`);
 
 } catch (error) {
     console.error('Error updating CLI version:', error.message);

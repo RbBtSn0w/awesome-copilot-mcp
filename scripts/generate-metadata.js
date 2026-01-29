@@ -19,7 +19,7 @@ const os = require('os');
 const GITHUB_OWNER = 'github';
 const GITHUB_REPO = 'awesome-copilot';
 const GITHUB_BRANCH = 'main';
-const DEFAULT_OUTPUT = path.join(os.homedir(), '.cache', 'awesome-copilot-mcp', 'metadata.json');
+const DEFAULT_OUTPUT = path.join(__dirname, '..', 'metadata.json');
 
 // Parse command line arguments
 const args = process.argv.slice(2);
@@ -457,8 +457,7 @@ async function generateMetadata() {
     prompts,
     instructions,
     skills,
-    collections,
-    lastUpdated: new Date().toISOString()
+    collections
   };
 
   return metadata;
