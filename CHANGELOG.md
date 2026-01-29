@@ -1,3 +1,10 @@
+# [0.2.0](https://github.com/RbBtSn0w/awesome-copilot-mcp/compare/v0.1.0...v0.2.0) (2026-01-29)
+
+
+### Features
+
+* add schedule to sync upstream and trigger release ([0fe4c61](https://github.com/RbBtSn0w/awesome-copilot-mcp/commit/0fe4c61ab89149aeb6f1c98d2dec2cbd06073619))
+
 # [0.1.0](https://github.com/RbBtSn0w/awesome-copilot-mcp/compare/v0.0.1...v0.1.0) (2026-01-29)
 
 
