@@ -3,11 +3,17 @@ name: Publish to MCP Registry
 on:
   workflow_dispatch:
   release:
-    types: [published]
+    types: [published, released, created]
+  # Also trigger when semantic-release creates a tag
+  push:
+    tags:
+      - 'v*'
 
 jobs:
   publish-mcp:
     runs-on: ubuntu-latest
+    # Only run for release tags, not all pushes
+    if: startsWith(github.ref, 'refs/tags/v')
     permissions:
       contents: read
       id-token: write
@@ -40,13 +46,25 @@ jobs:
       - name: Verify npm package published
         run: |
           VERSION=$(node -p "require('./package.json').version")
-          echo "Checking if awesome-copilot-mcp@$VERSION is published to npm..."
-          if npm view awesome-copilot-mcp@$VERSION version; then
-            echo "✅ Package version $VERSION is available on npm"
-          else
-            echo "❌ Package version $VERSION not found on npm"
-            exit 1
-          fi
+          echo "Waiting for awesome-copilot-mcp@$VERSION to be available on npm..."
+          
+          MAX_RETRIES=10
+          RETRY_COUNT=0
+          
+          while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+            if npm view awesome-copilot-mcp@$VERSION version > /dev/null 2>&1; then
+              echo "✅ Package awesome-copilot-mcp@$VERSION is available on npm"
+              npm view awesome-copilot-mcp@$VERSION mcpName
+              exit 0
+            fi
+            
+            RETRY_COUNT=$((RETRY_COUNT + 1))
+            echo "⏳ Attempt $RETRY_COUNT/$MAX_RETRIES: Package not yet available, waiting 30 seconds..."
+            sleep 30
+          done
+          
+          echo "❌ Package awesome-copilot-mcp@$VERSION not available on npm after 5 minutes"
+          exit 1
       
       - name: Install MCP Publisher
         run: |
