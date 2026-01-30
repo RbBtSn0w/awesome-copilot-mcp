@@ -1,3 +1,10 @@
+## [0.2.13](https://github.com/RbBtSn0w/awesome-copilot-mcp/compare/v0.2.12...v0.2.13) (2026-01-30)
+
+
+### Bug Fixes
+
+* set Git author and committer environment variables for the semantic-release bot. ([605cbbd](https://github.com/RbBtSn0w/awesome-copilot-mcp/commit/605cbbd1661d6da618949f72988f193c09b18a7c))
+
 ## [0.2.12](https://github.com/RbBtSn0w/awesome-copilot-mcp/compare/v0.2.11...v0.2.12) (2026-01-30)
 
 
