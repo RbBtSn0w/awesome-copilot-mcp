@@ -62,11 +62,17 @@ jobs:
       
       - name: Install MCP Publisher
         run: |
+          # Dynamically get the latest version
+          LATEST_VERSION=$(curl -s https://api.github.com/repos/modelcontextprotocol/registry/releases/latest | jq -r '.tag_name')
+          echo "Installing mcp-publisher ${LATEST_VERSION}..."
+          
           # Download mcp-publisher binary for Linux amd64
-          curl -L "https://github.com/modelcontextprotocol/registry/releases/download/v1.0.0/mcp-publisher_1.0.0_linux_amd64.tar.gz" -o mcp-publisher.tar.gz
+          curl -L "https://github.com/modelcontextprotocol/registry/releases/download/${LATEST_VERSION}/mcp-publisher_linux_amd64.tar.gz" -o mcp-publisher.tar.gz
           tar xzf mcp-publisher.tar.gz
           chmod +x mcp-publisher
           sudo mv mcp-publisher /usr/local/bin/
+          
+          # Verify installation
           mcp-publisher --version
       
       - name: Copy server.json to root
