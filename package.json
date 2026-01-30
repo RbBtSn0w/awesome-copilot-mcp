@@ -6,6 +6,7 @@
   "files": [
     "dist",
     "metadata.json",
+    ".mcp",
     "README.md",
     "LICENSE"
   ],
@@ -39,6 +40,7 @@
     "release": "semantic-release"
   },
   "prepare": "husky install",
+  "mcpName": "io.github.rbbtsnow/awesome-copilot-mcp",
   "keywords": [
     "mcp",
     "model-context-protocol",
