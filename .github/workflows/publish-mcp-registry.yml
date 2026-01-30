@@ -69,15 +69,11 @@ jobs:
           sudo mv mcp-publisher /usr/local/bin/
           mcp-publisher --version
       
-      - name: Authenticate with GitHub
-        run: mcp-publisher login github --token "$GITHUB_TOKEN"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Authenticate with GitHub OIDC
+        run: mcp-publisher login github-oidc
       
       - name: Publish to MCP Registry
         run: mcp-publisher publish
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       
       - name: Verify Publication
         run: |
