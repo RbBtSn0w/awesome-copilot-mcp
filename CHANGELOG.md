@@ -1,3 +1,10 @@
+## [0.2.11](https://github.com/RbBtSn0w/awesome-copilot-mcp/compare/v0.2.10...v0.2.11) (2026-01-30)
+
+
+### Bug Fixes
+
+* correct GitHub username case in name field ([34dbc15](https://github.com/RbBtSn0w/awesome-copilot-mcp/commit/34dbc1564053ce779f0832bad5311fcab2db0914))
+
 ## [0.2.10](https://github.com/RbBtSn0w/awesome-copilot-mcp/compare/v0.2.9...v0.2.10) (2026-01-30)
 
 
