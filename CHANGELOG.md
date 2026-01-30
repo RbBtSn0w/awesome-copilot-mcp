@@ -1,3 +1,10 @@
+## [0.2.12](https://github.com/RbBtSn0w/awesome-copilot-mcp/compare/v0.2.11...v0.2.12) (2026-01-30)
+
+
+### Bug Fixes
+
+* correct mcpName case in package.json ([37e34c5](https://github.com/RbBtSn0w/awesome-copilot-mcp/commit/37e34c5f8c79ab1e726c668416b355850a73e38f))
+
 ## [0.2.11](https://github.com/RbBtSn0w/awesome-copilot-mcp/compare/v0.2.10...v0.2.11) (2026-01-30)
 
 
