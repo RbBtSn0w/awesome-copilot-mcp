@@ -1,3 +1,10 @@
+## [0.2.5](https://github.com/RbBtSn0w/awesome-copilot-mcp/compare/v0.2.4...v0.2.5) (2026-01-30)
+
+
+### Bug Fixes
+
+* test GitHub App token enabling workflow triggers ([1281b4c](https://github.com/RbBtSn0w/awesome-copilot-mcp/commit/1281b4c9ac04c7a2894fc39ea357494fb3e1308c))
+
 ## [0.2.4](https://github.com/RbBtSn0w/awesome-copilot-mcp/compare/v0.2.3...v0.2.4) (2026-01-30)
 
 
