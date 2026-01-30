@@ -1,3 +1,11 @@
+## [0.2.1](https://github.com/RbBtSn0w/awesome-copilot-mcp/compare/v0.2.0...v0.2.1) (2026-01-30)
+
+
+### Bug Fixes
+
+* enable MCP Registry publishing with mcpName field ([f99cf3b](https://github.com/RbBtSn0w/awesome-copilot-mcp/commit/f99cf3b2f9e8dcf053a93a52547c2d4fcb831cec))
+* update package-lock.json to sync with package.json ([806da4e](https://github.com/RbBtSn0w/awesome-copilot-mcp/commit/806da4e3c2497fd090a3c8e18c64317a6a723993))
+
 # [0.2.0](https://github.com/RbBtSn0w/awesome-copilot-mcp/compare/v0.1.0...v0.2.0) (2026-01-29)
 
 
