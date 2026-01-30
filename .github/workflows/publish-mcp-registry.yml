@@ -48,20 +48,28 @@ jobs:
             exit 1
           fi
       
-      - name: Create submission comment
+      - name: Install MCP Publisher
         run: |
-          echo "📦 MCP Server Ready for Registry Submission"
-          echo ""
-          echo "To publish to the MCP Registry, please:"
-          echo "1. Visit: https://modelcontextprotocol.io/registry/submit"
-          echo "2. Or install mcp-publisher CLI locally:"
-          echo "   brew install mcp-publisher  # macOS"
-          echo "   # or download from releases"
-          echo "3. Run: mcp-publisher login github"
-          echo "4. Run: mcp-publisher publish"
-          echo ""
-          echo "Server details:"
-          echo "  Name: io.github.rbbtsnow/awesome-copilot-mcp"
-          echo "  Version: $(node -p "require('./package.json').version")"
-          echo "  npm: awesome-copilot-mcp"
-          echo "  Repository: https://github.com/RbBtSn0w/awesome-copilot-mcp"
+          # Download mcp-publisher binary for Linux amd64
+          curl -L "https://github.com/modelcontextprotocol/registry/releases/download/v1.0.0/mcp-publisher_1.0.0_linux_amd64.tar.gz" -o mcp-publisher.tar.gz
+          tar xzf mcp-publisher.tar.gz
+          chmod +x mcp-publisher
+          sudo mv mcp-publisher /usr/local/bin/
+          mcp-publisher --version
+      
+      - name: Authenticate with GitHub
+        run: mcp-publisher login github --token "$GITHUB_TOKEN"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Publish to MCP Registry
+        run: mcp-publisher publish
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Verify Publication
+        run: |
+          echo "✅ MCP Server published successfully!"
+          echo "Registry name: io.github.rbbtsnow/awesome-copilot-mcp"
+          echo "Version: $(node -p "require('./package.json').version")"
+          echo "View at: https://registry.modelcontextprotocol.io/servers/io.github.rbbtsnow/awesome-copilot-mcp"
