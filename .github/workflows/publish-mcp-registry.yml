@@ -69,6 +69,9 @@ jobs:
           sudo mv mcp-publisher /usr/local/bin/
           mcp-publisher --version
       
+      - name: Copy server.json to root
+        run: cp .mcp/server.json server.json
+      
       - name: Authenticate with GitHub OIDC
         run: mcp-publisher login github-oidc
       
