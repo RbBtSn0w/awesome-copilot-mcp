@@ -1,3 +1,10 @@
+## [0.2.4](https://github.com/RbBtSn0w/awesome-copilot-mcp/compare/v0.2.3...v0.2.4) (2026-01-30)
+
+
+### Bug Fixes
+
+* simplify MCP Registry workflow to only use release published event ([c058351](https://github.com/RbBtSn0w/awesome-copilot-mcp/commit/c058351ecc21c39c2d2529e05a7135327d1ab82e))
+
 ## [0.2.3](https://github.com/RbBtSn0w/awesome-copilot-mcp/compare/v0.2.2...v0.2.3) (2026-01-30)
 
 

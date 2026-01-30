@@ -1,7 +1,7 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-10-17/server.schema.json",
   "name": "io.github.rbbtsnow/awesome-copilot-mcp",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "Model Context Protocol server for awesome-copilot agents and collections",
   "title": "Awesome Copilot MCP Server",
   "websiteUrl": "https://github.com/RbBtSn0w/awesome-copilot-mcp",
@@ -9,7 +9,7 @@
     {
       "registryType": "npm",
       "identifier": "awesome-copilot-mcp",
-      "version": "0.2.3"
+      "version": "0.2.4"
     }
   ],
   "repository": {
