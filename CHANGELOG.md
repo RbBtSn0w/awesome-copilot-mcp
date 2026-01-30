@@ -1,3 +1,10 @@
+## [0.2.8](https://github.com/RbBtSn0w/awesome-copilot-mcp/compare/v0.2.7...v0.2.8) (2026-01-30)
+
+
+### Bug Fixes
+
+* add required transport field and registryBaseUrl to server.json ([5086a2f](https://github.com/RbBtSn0w/awesome-copilot-mcp/commit/5086a2f39b38fdead5990a5af3b6dd2c0e764ee6))
+
 ## [0.2.7](https://github.com/RbBtSn0w/awesome-copilot-mcp/compare/v0.2.6...v0.2.7) (2026-01-30)
 
 
