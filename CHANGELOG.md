@@ -1,3 +1,10 @@
+## [0.2.3](https://github.com/RbBtSn0w/awesome-copilot-mcp/compare/v0.2.2...v0.2.3) (2026-01-30)
+
+
+### Bug Fixes
+
+* use correct mcp-publisher download URL and authentication ([0167865](https://github.com/RbBtSn0w/awesome-copilot-mcp/commit/016786596c405885f682acc91f845eaac8fadc5e))
+
 ## [0.2.2](https://github.com/RbBtSn0w/awesome-copilot-mcp/compare/v0.2.1...v0.2.2) (2026-01-30)
 
 
