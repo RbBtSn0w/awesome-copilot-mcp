@@ -40,7 +40,7 @@
     "release": "semantic-release"
   },
   "prepare": "husky install",
-  "mcpName": "io.github.rbbtsnow/awesome-copilot-mcp",
+  "mcpName": "io.github.RbBtSn0w/awesome-copilot-mcp",
   "keywords": [
     "mcp",
     "model-context-protocol",
