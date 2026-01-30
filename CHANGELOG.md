@@ -1,3 +1,10 @@
+## [0.2.7](https://github.com/RbBtSn0w/awesome-copilot-mcp/compare/v0.2.6...v0.2.7) (2026-01-30)
+
+
+### Bug Fixes
+
+* copy server.json to root directory before mcp-publisher publish ([4af86a3](https://github.com/RbBtSn0w/awesome-copilot-mcp/commit/4af86a3bade7106f259290297e12b10abdf846c4))
+
 ## [0.2.6](https://github.com/RbBtSn0w/awesome-copilot-mcp/compare/v0.2.5...v0.2.6) (2026-01-30)
 
 
