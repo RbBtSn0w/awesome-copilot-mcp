@@ -1,3 +1,10 @@
+## [0.2.6](https://github.com/RbBtSn0w/awesome-copilot-mcp/compare/v0.2.5...v0.2.6) (2026-01-30)
+
+
+### Bug Fixes
+
+* use GitHub OIDC authentication for mcp-publisher and remove debug workflow ([8e10f3e](https://github.com/RbBtSn0w/awesome-copilot-mcp/commit/8e10f3ef9ff612043bbc8db53e4b7fa4ac982e01))
+
 ## [0.2.5](https://github.com/RbBtSn0w/awesome-copilot-mcp/compare/v0.2.4...v0.2.5) (2026-01-30)
 
 
