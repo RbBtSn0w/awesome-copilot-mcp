@@ -1,3 +1,10 @@
+## [0.2.10](https://github.com/RbBtSn0w/awesome-copilot-mcp/compare/v0.2.9...v0.2.10) (2026-01-30)
+
+
+### Bug Fixes
+
+* update schema to 2025-12-11 (latest version) ([a91d9f5](https://github.com/RbBtSn0w/awesome-copilot-mcp/commit/a91d9f5fac6a3d517e145a918f760e0f1edf4607))
+
 ## [0.2.9](https://github.com/RbBtSn0w/awesome-copilot-mcp/compare/v0.2.8...v0.2.9) (2026-01-30)
 
 
