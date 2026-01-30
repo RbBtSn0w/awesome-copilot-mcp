@@ -1,3 +1,10 @@
+## [0.2.2](https://github.com/RbBtSn0w/awesome-copilot-mcp/compare/v0.2.1...v0.2.2) (2026-01-30)
+
+
+### Bug Fixes
+
+* ensure complete version synchronization across all files ([e90302b](https://github.com/RbBtSn0w/awesome-copilot-mcp/commit/e90302b9a6bb97e45f0436dc0a813f3648764ec1))
+
 ## [0.2.1](https://github.com/RbBtSn0w/awesome-copilot-mcp/compare/v0.2.0...v0.2.1) (2026-01-30)
 
 
