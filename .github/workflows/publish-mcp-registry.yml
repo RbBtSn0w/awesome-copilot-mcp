@@ -3,17 +3,11 @@ name: Publish to MCP Registry
 on:
   workflow_dispatch:
   release:
-    types: [published, released, created]
-  # Also trigger when semantic-release creates a tag
-  push:
-    tags:
-      - 'v*'
+    types: [published]
 
 jobs:
   publish-mcp:
     runs-on: ubuntu-latest
-    # Only run for release tags, not all pushes
-    if: startsWith(github.ref, 'refs/tags/v')
     permissions:
       contents: read
       id-token: write
