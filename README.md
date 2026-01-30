@@ -8,6 +8,9 @@ A Model Context Protocol (MCP) server that provides access to [awesome-copilot](
 
 ## Quick Start (No Installation Required)
 
+[![Install in VS Code](https://img.shields.io/badge/VS_Code-Install_awesome--copilot-0098FF?style=flat-square&logo=visualstudiocode&logoColor=ffffff)](vscode:mcp/install?%7B%22name%22%3A%22awesome-copilot%22%2C%22type%22%3A%22stdio%22%2C%22command%22%3A%22npx%22%2C%22args%22%3A%5B%22-y%22%2C%22awesome-copilot-mcp%22%2C%22start%22%5D%7D) [![Install in VS Code Insiders](https://img.shields.io/badge/VS_Code_Insiders-Install_awesome--copilot-24bfa5?style=flat-square&logo=visualstudiocode&logoColor=ffffff)](vscode-insiders:mcp/install?%7B%22name%22%3A%22awesome-copilot%22%2C%22type%22%3A%22stdio%22%2C%22command%22%3A%22npx%22%2C%22args%22%3A%5B%22-y%22%2C%22awesome-copilot-mcp%22%2C%22start%22%5D%7D)
+
+
 Add to your MCP Client configuration (e.g., Claude Desktop or VS Code):
 
 ```json
