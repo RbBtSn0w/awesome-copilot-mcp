@@ -1,3 +1,10 @@
+## [0.2.9](https://github.com/RbBtSn0w/awesome-copilot-mcp/compare/v0.2.8...v0.2.9) (2026-01-30)
+
+
+### Bug Fixes
+
+* dynamically fetch latest mcp-publisher version ([28fac16](https://github.com/RbBtSn0w/awesome-copilot-mcp/commit/28fac16b0a7c5dfc7331762d298f42f1302eb620))
+
 ## [0.2.8](https://github.com/RbBtSn0w/awesome-copilot-mcp/compare/v0.2.7...v0.2.8) (2026-01-30)
 
 
