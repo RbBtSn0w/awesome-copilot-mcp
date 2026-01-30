@@ -8,8 +8,12 @@
   "packages": [
     {
       "registryType": "npm",
+      "registryBaseUrl": "https://registry.npmjs.org",
       "identifier": "awesome-copilot-mcp",
-      "version": "0.2.7"
+      "version": "0.2.7",
+      "transport": {
+        "type": "stdio"
+      }
     }
   ],
   "repository": {
