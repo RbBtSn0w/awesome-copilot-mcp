@@ -1,3 +1,17 @@
+# [0.3.0](https://github.com/RbBtSn0w/awesome-copilot-mcp/compare/v0.2.13...v0.3.0) (2026-02-03)
+
+
+### Bug Fixes
+
+* sync upstream data ([e899367](https://github.com/RbBtSn0w/awesome-copilot-mcp/commit/e89936796866f013221b0669813084d572417ac9))
+
+
+### Features
+
+* add automated publishing to Context7 ([b1a9e31](https://github.com/RbBtSn0w/awesome-copilot-mcp/commit/b1a9e31c970001d60fa37c11ca959b80c50bdd66))
+* add automated publishing to Context7 ([975c3f3](https://github.com/RbBtSn0w/awesome-copilot-mcp/commit/975c3f32c48b7774930af0aa93e7dadda7a9b66c))
+* add automated publishing to Context7 ([7a74019](https://github.com/RbBtSn0w/awesome-copilot-mcp/commit/7a74019c669998f02b0fc5ab9a0b9ebc0aa9d333))
+
 ## [0.2.13](https://github.com/RbBtSn0w/awesome-copilot-mcp/compare/v0.2.12...v0.2.13) (2026-01-30)
 
 
