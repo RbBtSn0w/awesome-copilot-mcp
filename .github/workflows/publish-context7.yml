@@ -1,0 +1,21 @@
+name: Publish to Context7
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  publish-context7:
+    name: Refresh Context7 Library
+    runs-on: ubuntu-latest
+    steps:
+      - name: Refresh Context7 Library
+        env:
+          CONTEXT7_API_KEY: ${{ secrets.CONTEXT7_API_KEY }}
+          DOCS_REPO_URL: "${{ github.server_url }}/${{ github.repository }}"
+        run: |
+          echo "Triggering Context7 refresh for $DOCS_REPO_URL"
+          curl -X POST https://context7.com/api/v1/refresh \
+          -H "Content-Type: application/json" \
+          -H "Authorization: Bearer $CONTEXT7_API_KEY" \
+          -d "{\"docsRepoUrl\": \"$DOCS_REPO_URL\"}"

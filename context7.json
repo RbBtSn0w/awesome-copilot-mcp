@@ -1,0 +1,29 @@
+{
+  "$schema": "https://context7.com/schema/context7.json",
+  "projectTitle": "Awesome Copilot MCP",
+  "description": "Model Context Protocol server for awesome-copilot agents and collections",
+  "folders": ["."],
+  "excludeFolders": [
+    "node_modules",
+    "dist",
+    "coverage",
+    ".git",
+    ".github",
+    ".mcp",
+    "test",
+    "scripts"
+  ],
+  "excludeFiles": [
+    "package-lock.json",
+    ".gitignore",
+    ".npmignore",
+    ".prettierrc",
+    ".eslintrc.js",
+    "tsconfig.json",
+    "tsconfig.build.json",
+    "vitest.config.mts",
+    "commitlint.config.js",
+    "release.config.js",
+    "mcp-config.sample.json"
+  ]
+}
