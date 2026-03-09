@@ -1,3 +1,10 @@
+## [0.3.6](https://github.com/RbBtSn0w/awesome-copilot-mcp/compare/v0.3.5...v0.3.6) (2026-03-09)
+
+
+### Bug Fixes
+
+* sync upstream data ([90d3e29](https://github.com/RbBtSn0w/awesome-copilot-mcp/commit/90d3e294f5b6892aedd17d5a0e2c4d45cd701976))
+
 ## [0.3.5](https://github.com/RbBtSn0w/awesome-copilot-mcp/compare/v0.3.4...v0.3.5) (2026-03-07)
 
 
