@@ -222,18 +222,26 @@ describe('MCPTools', () => {
     });
 
     it('should return matching plugins', async () => {
-      const result = await tools.handleTool('search', { query: 'plugin', type: 'plugin' });
-      expect(result.count).toBeGreaterThanOrEqual(0);
+      const result = await tools.handleTool('search', { query: 'plugin', type: 'plugin' }) as SearchResult;
+      expect(result.count).toBeGreaterThan(0);
+      const pluginItem = result.items.find(item => item.name === 'test-plugin');
+      expect(pluginItem).toBeDefined();
+      expect(pluginItem?.type).toBe('plugin');
     });
 
     it('should return matching hooks', async () => {
-      const result = await tools.handleTool('search', { query: 'hook', type: 'hook' });
-      expect(result.count).toBeGreaterThanOrEqual(0);
+      const result = await tools.handleTool('search', { query: 'hook', type: 'hook' }) as SearchResult;
+      expect(result.count).toBeGreaterThan(0);
+      const hookItem = result.items.find(item => item.name === 'test-hook' && item.type === 'hook');
+      expect(hookItem).toBeDefined();
     });
 
     it('should return matching workflows', async () => {
-      const result = await tools.handleTool('search', { query: 'workflow', type: 'workflow' });
-      expect(result.count).toBeGreaterThanOrEqual(0);
+      const result = await tools.handleTool('search', { query: 'workflow', type: 'workflow' }) as SearchResult;
+      expect(result.count).toBeGreaterThan(0);
+      const workflowItem = result.items.find(item => item.name === 'test-workflow');
+      expect(workflowItem).toBeDefined();
+      expect(workflowItem?.type).toBe('workflow');
     });
   });
 
@@ -279,21 +287,24 @@ describe('MCPTools', () => {
       const result = await tools.handleTool('download', { name: 'test-plugin' });
       expect(result.name).toBe('test-plugin');
       expect(result.type).toBe('plugin');
-      expect(result.url).toBeDefined();
+      expect(typeof result.url).toBe('string');
+      expect(result.url.length).toBeGreaterThan(0);
     });
 
     it('should return download info for hook', async () => {
       const result = await tools.handleTool('download', { name: 'test-hook' });
       expect(result.name).toBe('test-hook');
       expect(result.type).toBe('hook');
-      expect(result.url).toBeDefined();
+      expect(typeof result.url).toBe('string');
+      expect(result.url.length).toBeGreaterThan(0);
     });
 
     it('should return download info for workflow', async () => {
       const result = await tools.handleTool('download', { name: 'test-workflow' });
       expect(result.name).toBe('test-workflow');
       expect(result.type).toBe('workflow');
-      expect(result.url).toBeDefined();
+      expect(typeof result.url).toBe('string');
+      expect(result.url.length).toBeGreaterThan(0);
     });
   });
 

@@ -485,20 +485,29 @@ async function parsePlugins() {
     const data = JSON.parse(content);
     if (!Array.isArray(data)) return [];
 
-    return data.map(entry => ({
-      name: entry.name,
-      description: entry.description || `Plugin: ${entry.name}`,
-      tags: Array.isArray(entry.keywords) ? entry.keywords : [],
-      version: entry.version,
-      author: entry.author,
-      homepage: entry.homepage,
-      repository: entry.repository,
-      license: entry.license,
-      source: entry.source,
-      path: entry.source?.path || `plugins/external.json#${entry.name}`,
-      type: 'plugin',
-      url: entry.repository || entry.homepage || (entry.source?.repo ? `https://github.com/${entry.source.repo}` : '')
-    }));
+    return data.map(entry => {
+      const pathFallback = entry.source?.path || `plugins/external.json#${entry.name}`;
+      let url = entry.repository || entry.homepage || (entry.source?.repo ? `https://github.com/${entry.source.repo}` : null);
+
+      if (!url) {
+        url = `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/${GITHUB_BRANCH}/plugins/external.json#${encodeURIComponent(entry.name)}`;
+      }
+
+      return {
+        name: entry.name,
+        description: entry.description || `Plugin: ${entry.name}`,
+        tags: Array.isArray(entry.keywords) ? entry.keywords : [],
+        version: entry.version,
+        author: entry.author,
+        homepage: entry.homepage,
+        repository: entry.repository,
+        license: entry.license,
+        source: entry.source,
+        path: pathFallback,
+        type: 'plugin',
+        url
+      };
+    });
   } catch (error) {
     console.warn(`Failed to parse plugins from external.json: ${error.message}`);
     return [];

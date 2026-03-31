@@ -43,7 +43,10 @@ export class MCPTools {
             type: {
               type: 'string',
               description: 'Optional content type filter (agent, prompt, instruction, skill, collection, plugin, hook, workflow).',
-              enum: ['agent', 'prompt', 'instruction', 'skill', 'collection', 'plugin', 'hook', 'workflow']
+              enum: [
+                'agent', 'prompt', 'instruction', 'skill', 'collection', 'plugin', 'hook', 'workflow',
+                'agents', 'prompts', 'instructions', 'skills', 'collections', 'plugins', 'hooks', 'workflows'
+              ]
             },
             tags: {
               type: 'array',
@@ -71,7 +74,10 @@ export class MCPTools {
             type: {
               type: 'string',
               description: 'Optional type hint (agent, prompt, instruction, skill, collection, plugin, hook, workflow) to resolve name collisions.',
-              enum: ['agent', 'prompt', 'instruction', 'skill', 'collection', 'plugin', 'hook', 'workflow']
+              enum: [
+                'agent', 'prompt', 'instruction', 'skill', 'collection', 'plugin', 'hook', 'workflow',
+                'agents', 'prompts', 'instructions', 'skills', 'collections', 'plugins', 'hooks', 'workflows'
+              ]
             }
           },
           required: ['name']
