@@ -55,6 +55,24 @@ export class MCPResources {
                 name: 'Collections Index',
                 description: 'List of all available collections',
                 mimeType: 'application/json'
+            },
+            {
+                uri: 'awesome://plugins/index',
+                name: 'Plugins Index',
+                description: 'List of all available plugins',
+                mimeType: 'application/json'
+            },
+            {
+                uri: 'awesome://hooks/index',
+                name: 'Hooks Index',
+                description: 'List of all available hooks',
+                mimeType: 'application/json'
+            },
+            {
+                uri: 'awesome://workflows/index',
+                name: 'Workflows Index',
+                description: 'List of all available agentic workflows',
+                mimeType: 'application/json'
             }
         ];
     }
@@ -95,9 +113,27 @@ export class MCPResources {
                 mimeType: 'application/json'
             },
             {
+                uriTemplate: 'awesome://plugins/{name}',
+                name: 'plugin-info',
+                description: 'Get metadata for a specific plugin by name',
+                mimeType: 'application/json'
+            },
+            {
+                uriTemplate: 'awesome://hooks/{name}',
+                name: 'hook-info',
+                description: 'Get metadata for a specific hook by name',
+                mimeType: 'application/json'
+            },
+            {
+                uriTemplate: 'awesome://workflows/{name}',
+                name: 'workflow-info',
+                description: 'Get metadata for a specific workflow by name',
+                mimeType: 'application/json'
+            },
+            {
                 uriTemplate: 'awesome://search/{type}/{query}',
                 name: 'search-resources',
-                description: 'Search resources by type (agents/prompts/instructions/skills/collections/all) and query',
+                description: 'Search resources by type (agents/prompts/instructions/skills/collections/plugins/hooks/workflows/all) and query',
                 mimeType: 'application/json'
             },
             {
@@ -137,6 +173,15 @@ export class MCPResources {
             if (uri === 'awesome://collections/index') {
                 return await this.readCollectionsIndex();
             }
+            if (uri === 'awesome://plugins/index') {
+                return await this.readPluginsIndex();
+            }
+            if (uri === 'awesome://hooks/index') {
+                return await this.readHooksIndex();
+            }
+            if (uri === 'awesome://workflows/index') {
+                return await this.readWorkflowsIndex();
+            }
 
             // Handle template resources
             if (uri.startsWith('awesome://agents/')) {
@@ -153,6 +198,15 @@ export class MCPResources {
             }
             if (uri.startsWith('awesome://collections/')) {
                 return await this.readCollectionByName(uri);
+            }
+            if (uri.startsWith('awesome://plugins/')) {
+                return await this.readPluginByName(uri);
+            }
+            if (uri.startsWith('awesome://hooks/')) {
+                return await this.readHookByName(uri);
+            }
+            if (uri.startsWith('awesome://workflows/')) {
+                return await this.readWorkflowByName(uri);
             }
             if (uri.startsWith('awesome://search/')) {
                 return await this.readSearchResults(uri);
@@ -260,6 +314,58 @@ export class MCPResources {
         };
     }
 
+    private async readPluginsIndex(): Promise<ResourceContent> {
+        const index = await this.adapter.fetchIndex();
+        const pluginsList = index.plugins.map(plugin => ({
+            name: plugin.name,
+            description: plugin.description,
+            tags: plugin.tags,
+            version: plugin.version,
+            repository: plugin.repository,
+            homepage: plugin.homepage,
+            path: plugin.path,
+            url: plugin.url
+        }));
+        return {
+            uri: 'awesome://plugins/index',
+            mimeType: 'application/json',
+            text: JSON.stringify(pluginsList, null, 2)
+        };
+    }
+
+    private async readHooksIndex(): Promise<ResourceContent> {
+        const index = await this.adapter.fetchIndex();
+        const hooksList = index.hooks.map(hook => ({
+            name: hook.name,
+            description: hook.description,
+            tags: hook.tags,
+            files: hook.files,
+            path: hook.path,
+            url: hook.url
+        }));
+        return {
+            uri: 'awesome://hooks/index',
+            mimeType: 'application/json',
+            text: JSON.stringify(hooksList, null, 2)
+        };
+    }
+
+    private async readWorkflowsIndex(): Promise<ResourceContent> {
+        const index = await this.adapter.fetchIndex();
+        const workflowsList = index.workflows.map(workflow => ({
+            name: workflow.name,
+            description: workflow.description,
+            tags: workflow.tags,
+            path: workflow.path,
+            url: workflow.url
+        }));
+        return {
+            uri: 'awesome://workflows/index',
+            mimeType: 'application/json',
+            text: JSON.stringify(workflowsList, null, 2)
+        };
+    }
+
     private async readAgentByName(uri: string): Promise<ResourceContent> {
         const name = uri.replace('awesome://agents/', '');
         const index = await this.adapter.fetchIndex();
@@ -344,6 +450,54 @@ export class MCPResources {
         };
     }
 
+    private async readPluginByName(uri: string): Promise<ResourceContent> {
+        const name = uri.replace('awesome://plugins/', '');
+        const index = await this.adapter.fetchIndex();
+        const plugin = index.plugins.find(p => p.name === name);
+
+        if (!plugin) {
+            throw new Error(`Plugin not found: "${name}". \nHint: Resource templates require an EXACT name match. If you are unsure of the name, use "awesome://search/plugins/${name}" to search, or check "awesome://plugins/index" for a full list of available plugins.`);
+        }
+
+        return {
+            uri,
+            mimeType: 'application/json',
+            text: JSON.stringify(plugin, null, 2)
+        };
+    }
+
+    private async readHookByName(uri: string): Promise<ResourceContent> {
+        const name = uri.replace('awesome://hooks/', '');
+        const index = await this.adapter.fetchIndex();
+        const hook = index.hooks.find(h => h.name === name);
+
+        if (!hook) {
+            throw new Error(`Hook not found: "${name}". \nHint: Resource templates require an EXACT name match. If you are unsure of the name, use "awesome://search/hooks/${name}" to search, or check "awesome://hooks/index" for a full list of available hooks.`);
+        }
+
+        return {
+            uri,
+            mimeType: 'application/json',
+            text: JSON.stringify(hook, null, 2)
+        };
+    }
+
+    private async readWorkflowByName(uri: string): Promise<ResourceContent> {
+        const name = uri.replace('awesome://workflows/', '');
+        const index = await this.adapter.fetchIndex();
+        const workflow = index.workflows.find(w => w.name === name);
+
+        if (!workflow) {
+            throw new Error(`Workflow not found: "${name}". \nHint: Resource templates require an EXACT name match. If you are unsure of the name, use "awesome://search/workflows/${name}" to search, or check "awesome://workflows/index" for a full list of available workflows.`);
+        }
+
+        return {
+            uri,
+            mimeType: 'application/json',
+            text: JSON.stringify(workflow, null, 2)
+        };
+    }
+
     private async readSearchResults(uri: string): Promise<ResourceContent> {
         // Parse URI: awesome://search/{type}/{query}
         const parts = uri.replace('awesome://search/', '').split('/');
@@ -403,6 +557,33 @@ export class MCPResources {
             results.push(...collectionResults);
         }
 
+        if (type === 'plugins' || type === 'plugin' || type === 'all') {
+            const pluginResults = index.plugins.filter(plugin =>
+                plugin.name.toLowerCase().includes(query) ||
+                plugin.description.toLowerCase().includes(query) ||
+                plugin.tags.some(tag => tag.toLowerCase().includes(query))
+            );
+            results.push(...pluginResults);
+        }
+
+        if (type === 'hooks' || type === 'hook' || type === 'all') {
+            const hookResults = index.hooks.filter(hook =>
+                hook.name.toLowerCase().includes(query) ||
+                hook.description.toLowerCase().includes(query) ||
+                hook.tags.some(tag => tag.toLowerCase().includes(query))
+            );
+            results.push(...hookResults);
+        }
+
+        if (type === 'workflows' || type === 'workflow' || type === 'all') {
+            const workflowResults = index.workflows.filter(workflow =>
+                workflow.name.toLowerCase().includes(query) ||
+                workflow.description.toLowerCase().includes(query) ||
+                workflow.tags.some(tag => tag.toLowerCase().includes(query))
+            );
+            results.push(...workflowResults);
+        }
+
         return {
             uri,
             mimeType: 'application/json',
@@ -426,12 +607,16 @@ export class MCPResources {
             prompts: index.prompts.filter(p => p.tags.some(t => t.toLowerCase() === tag)),
             instructions: index.instructions.filter(i => i.tags.some(t => t.toLowerCase() === tag)),
             skills: index.skills.filter(s => s.tags.some(t => t.toLowerCase() === tag)),
-            collections: index.collections.filter(c => c.tags.some(t => t.toLowerCase() === tag))
+            collections: index.collections.filter(c => c.tags.some(t => t.toLowerCase() === tag)),
+            plugins: index.plugins.filter(p => p.tags.some(t => t.toLowerCase() === tag)),
+            hooks: index.hooks.filter(h => h.tags.some(t => t.toLowerCase() === tag)),
+            workflows: index.workflows.filter(w => w.tags.some(t => t.toLowerCase() === tag))
         };
 
         const totalCount = results.agents.length + results.prompts.length +
             results.instructions.length + results.skills.length +
-            results.collections.length;
+            results.collections.length + results.plugins.length +
+            results.hooks.length + results.workflows.length;
 
         return {
             uri,
@@ -443,7 +628,10 @@ export class MCPResources {
                 prompts: results.prompts,
                 instructions: results.instructions,
                 skills: results.skills,
-                collections: results.collections
+                collections: results.collections,
+                plugins: results.plugins,
+                hooks: results.hooks,
+                workflows: results.workflows
             }, null, 2)
         };
     }

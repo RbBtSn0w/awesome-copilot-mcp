@@ -16,13 +16,16 @@ describe('MCPResources', () => {
         it('should list all direct resources', async () => {
             const result = await resources.getResources();
 
-            expect(result).toHaveLength(6);
+            expect(result).toHaveLength(9);
             expect(result[0].uri).toBe('awesome://metadata');
             expect(result[1].uri).toBe('awesome://agents/index');
             expect(result[2].uri).toBe('awesome://prompts/index');
             expect(result[3].uri).toBe('awesome://instructions/index');
             expect(result[4].uri).toBe('awesome://skills/index');
             expect(result[5].uri).toBe('awesome://collections/index');
+            expect(result[6].uri).toBe('awesome://plugins/index');
+            expect(result[7].uri).toBe('awesome://hooks/index');
+            expect(result[8].uri).toBe('awesome://workflows/index');
 
             // Verify all have required fields
             result.forEach(resource => {
@@ -44,6 +47,9 @@ describe('MCPResources', () => {
             expect(result.some(t => t.uriTemplate === 'awesome://instructions/{name}')).toBe(true);
             expect(result.some(t => t.uriTemplate === 'awesome://skills/{name}')).toBe(true);
             expect(result.some(t => t.uriTemplate === 'awesome://collections/{name}')).toBe(true);
+            expect(result.some(t => t.uriTemplate === 'awesome://plugins/{name}')).toBe(true);
+            expect(result.some(t => t.uriTemplate === 'awesome://hooks/{name}')).toBe(true);
+            expect(result.some(t => t.uriTemplate === 'awesome://workflows/{name}')).toBe(true);
             expect(result.some(t => t.uriTemplate === 'awesome://search/{type}/{query}')).toBe(true);
             expect(result.some(t => t.uriTemplate === 'awesome://tags/{tag}')).toBe(true);
 
@@ -131,6 +137,30 @@ describe('MCPResources', () => {
             const collections = JSON.parse(content.text);
             expect(Array.isArray(collections)).toBe(true);
         });
+
+        it('should read plugins index', async () => {
+            const content = await resources.readResource('awesome://plugins/index');
+
+            expect(content.uri).toBe('awesome://plugins/index');
+            const plugins = JSON.parse(content.text);
+            expect(Array.isArray(plugins)).toBe(true);
+        });
+
+        it('should read hooks index', async () => {
+            const content = await resources.readResource('awesome://hooks/index');
+
+            expect(content.uri).toBe('awesome://hooks/index');
+            const hooks = JSON.parse(content.text);
+            expect(Array.isArray(hooks)).toBe(true);
+        });
+
+        it('should read workflows index', async () => {
+            const content = await resources.readResource('awesome://workflows/index');
+
+            expect(content.uri).toBe('awesome://workflows/index');
+            const workflows = JSON.parse(content.text);
+            expect(Array.isArray(workflows)).toBe(true);
+        });
     });
 
     describe('readResource - Template Resources', () => {
@@ -173,6 +203,27 @@ describe('MCPResources', () => {
             const collection = JSON.parse(content.text);
             expect(collection).toHaveProperty('name');
             expect(collection).toHaveProperty('items');
+        });
+
+        it('should read plugin by name using template', async () => {
+            const content = await resources.readResource('awesome://plugins/test-plugin');
+            const data = JSON.parse(content.text);
+            expect(data).toHaveProperty('type', 'plugin');
+            expect(data).toHaveProperty('name', 'test-plugin');
+        });
+
+        it('should read hook by name using template', async () => {
+            const content = await resources.readResource('awesome://hooks/test-hook');
+            const data = JSON.parse(content.text);
+            expect(data).toHaveProperty('type', 'hook');
+            expect(data).toHaveProperty('name', 'test-hook');
+        });
+
+        it('should read workflow by name using template', async () => {
+            const content = await resources.readResource('awesome://workflows/test-workflow');
+            const data = JSON.parse(content.text);
+            expect(data).toHaveProperty('type', 'workflow');
+            expect(data).toHaveProperty('name', 'test-workflow');
         });
 
         it('should throw error for non-existent agent with helpful hint', async () => {
@@ -237,12 +288,18 @@ describe('MCPResources', () => {
             expect(result).toHaveProperty('instructions');
             expect(result).toHaveProperty('skills');
             expect(result).toHaveProperty('collections');
+            expect(result).toHaveProperty('plugins');
+            expect(result).toHaveProperty('hooks');
+            expect(result).toHaveProperty('workflows');
 
             expect(Array.isArray(result.agents)).toBe(true);
             expect(Array.isArray(result.prompts)).toBe(true);
             expect(Array.isArray(result.instructions)).toBe(true);
             expect(Array.isArray(result.skills)).toBe(true);
             expect(Array.isArray(result.collections)).toBe(true);
+            expect(Array.isArray(result.plugins)).toBe(true);
+            expect(Array.isArray(result.hooks)).toBe(true);
+            expect(Array.isArray(result.workflows)).toBe(true);
         });
     });
 

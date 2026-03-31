@@ -95,6 +95,9 @@ describe('MCPTools - Advanced Coverage', () => {
         type: 'collection'
       }
     ],
+    plugins: [],
+    hooks: [],
+    workflows: [],
     lastUpdated: new Date().toISOString()
   };
 

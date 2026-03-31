@@ -27,7 +27,10 @@ describe('GitHubAdapter', () => {
     prompts: [],
     instructions: [],
     skills: [],
-    collections: []
+    collections: [],
+    plugins: [],
+    hooks: [],
+    workflows: []
   };
 
   beforeEach(() => {
@@ -59,6 +62,9 @@ describe('GitHubAdapter', () => {
         instructions: metadata.instructions,
         skills: metadata.skills,
         collections: metadata.collections,
+        plugins: metadata.plugins,
+        hooks: metadata.hooks,
+        workflows: metadata.workflows,
         lastUpdated: metadata.generatedAt
       });
 

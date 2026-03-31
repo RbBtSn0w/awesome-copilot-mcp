@@ -92,5 +92,51 @@
             "type": "collection"
         }
     ],
+    "plugins": [
+        {
+            "name": "test-plugin",
+            "description": "Test plugin entry",
+            "tags": [
+                "plugin",
+                "test"
+            ],
+            "version": "1.0.0",
+            "path": "plugins/external.json#test-plugin",
+            "repository": "https://example.com/plugin-repo",
+            "homepage": "https://example.com/plugin",
+            "url": "https://example.com/plugin",
+            "type": "plugin"
+        }
+    ],
+    "hooks": [
+        {
+            "name": "test-hook",
+            "description": "Test hook for metadata",
+            "tags": [
+                "hook",
+                "test"
+            ],
+            "path": "hooks/test-hook/README.md",
+            "files": [
+                "README.md",
+                "hooks.json"
+            ],
+            "url": "https://github.com/github/awesome-copilot/blob/main/hooks/test-hook/README.md",
+            "type": "hook"
+        }
+    ],
+    "workflows": [
+        {
+            "name": "test-workflow",
+            "description": "Test workflow metadata",
+            "tags": [
+                "workflow",
+                "test"
+            ],
+            "path": "workflows/test-workflow.md",
+            "url": "https://github.com/github/awesome-copilot/blob/main/workflows/test-workflow.md",
+            "type": "workflow"
+        }
+    ],
     "lastUpdated": "2024-01-07T00:00:00Z"
 }

@@ -61,7 +61,53 @@ export interface Collection {
   type: 'collection';
 }
 
-export type ContentItem = Agent | Prompt | Instruction | Skill | Collection;
+export interface PluginAuthor {
+  name?: string;
+  url?: string;
+}
+
+export interface PluginSource {
+  source?: string;
+  repo?: string;
+  path?: string;
+  url?: string;
+}
+
+export interface Plugin {
+  name: string;
+  description: string;
+  tags: string[];
+  version?: string;
+  author?: PluginAuthor;
+  homepage?: string;
+  repository?: string;
+  license?: string;
+  source?: PluginSource;
+  path: string;
+  url: string;
+  type: 'plugin';
+}
+
+export interface Hook {
+  name: string;
+  description: string;
+  tags: string[];
+  path: string;
+  files?: string[];
+  url: string;
+  type: 'hook';
+}
+
+export interface Workflow {
+  name: string;
+  description: string;
+  tags: string[];
+  path: string;
+  url: string;
+  type: 'workflow';
+}
+
+export type ContentItem = Agent | Prompt | Instruction | Skill | Collection | Plugin | Hook | Workflow;
 
 export interface RepoConfig {
   owner: string;
@@ -77,6 +123,9 @@ export interface IndexData {
   instructions: Instruction[];
   skills: Skill[];
   collections: Collection[];
+  plugins: Plugin[];
+  hooks: Hook[];
+  workflows: Workflow[];
   lastUpdated: string;
   version?: string;
   generatedAt?: string;
@@ -91,14 +140,14 @@ export interface CacheEntry {
 
 export interface SearchOptions {
   query: string;
-  type?: 'agents' | 'prompts' | 'instructions' | 'skills' | 'collections' | 'all';
+  type?: 'agents' | 'prompts' | 'instructions' | 'skills' | 'collections' | 'plugins' | 'hooks' | 'workflows' | 'all';
   tags?: string[];
   limit?: number;
 }
 
 export interface LoadOptions {
   name: string;
-  type: 'agent' | 'prompt' | 'instruction' | 'skill' | 'collection';
+  type: 'agent' | 'prompt' | 'instruction' | 'skill' | 'collection' | 'plugin' | 'hook' | 'workflow';
   refresh?: boolean;
 }
 

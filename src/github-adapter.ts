@@ -118,6 +118,9 @@ export class GitHubAdapter {
             instructions: metadata.instructions || [],
             skills: metadata.skills || [],
             collections: metadata.collections || [],
+            plugins: metadata.plugins || [],
+            hooks: metadata.hooks || [],
+            workflows: metadata.workflows || [],
             lastUpdated: metadata.generatedAt || new Date().toISOString()
           };
         }
@@ -145,6 +148,9 @@ export class GitHubAdapter {
             instructions: metadata.instructions || [],
             skills: metadata.skills || [],
             collections: metadata.collections || [],
+            plugins: metadata.plugins || [],
+            hooks: metadata.hooks || [],
+            workflows: metadata.workflows || [],
             lastUpdated: metadata.generatedAt || new Date().toISOString()
           };
         }
@@ -165,6 +171,9 @@ export class GitHubAdapter {
           instructions: metadata.instructions || [],
           skills: metadata.skills || [],
           collections: metadata.collections || [],
+          plugins: metadata.plugins || [],
+          hooks: metadata.hooks || [],
+          workflows: metadata.workflows || [],
           lastUpdated: metadata.generatedAt || new Date().toISOString()
         };
       }
@@ -172,7 +181,7 @@ export class GitHubAdapter {
     } catch (err) {
       logger.error(`Failed to fetch remote index: ${err}`);
       return {
-        agents: [], prompts: [], instructions: [], skills: [], collections: [],
+        agents: [], prompts: [], instructions: [], skills: [], collections: [], plugins: [], hooks: [], workflows: [],
         lastUpdated: new Date().toISOString()
       };
     }

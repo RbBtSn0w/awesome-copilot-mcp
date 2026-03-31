@@ -54,6 +54,19 @@ Available endpoints:
 - `GET /search?q=kw` Search
 - `GET /openapi.json` API Documentation
 
+### Supported Content Types
+
+This server now indexes all resources published in the official `github/awesome-copilot` repository:
+
+- 🤖 Agents
+- 💬 Prompts
+- 📋 Instructions
+- 🛠️ Skills (folder-aware)
+- 📦 Collections
+- 🎁 Plugins (from `plugins/external.json`)
+- 🪝 Hooks
+- ⚡ Agentic Workflows
+
 ## Debugging
 
 MCP Inspector is the recommended way to test and debug:

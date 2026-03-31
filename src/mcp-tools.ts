@@ -42,8 +42,8 @@ export class MCPTools {
             },
             type: {
               type: 'string',
-              description: 'Optional content type filter (agent, prompt, instruction, skill, collection).',
-              enum: ['agent', 'prompt', 'instruction', 'skill', 'collection']
+              description: 'Optional content type filter (agent, prompt, instruction, skill, collection, plugin, hook, workflow).',
+              enum: ['agent', 'prompt', 'instruction', 'skill', 'collection', 'plugin', 'hook', 'workflow']
             },
             tags: {
               type: 'array',
@@ -70,8 +70,8 @@ export class MCPTools {
             },
             type: {
               type: 'string',
-              description: 'Optional type hint (agent, prompt, instruction, skill, collection) to resolve name collisions.',
-              enum: ['agent', 'prompt', 'instruction', 'skill', 'collection']
+              description: 'Optional type hint (agent, prompt, instruction, skill, collection, plugin, hook, workflow) to resolve name collisions.',
+              enum: ['agent', 'prompt', 'instruction', 'skill', 'collection', 'plugin', 'hook', 'workflow']
             }
           },
           required: ['name']
@@ -131,6 +131,9 @@ export class MCPTools {
   private async search(args: { query: string; type?: string; tags?: string[]; limit?: number }): Promise<SearchResult> {
     if (!args || typeof args.query !== 'string') throw new Error('Missing required argument: query');
     const index = await this.adapter.fetchIndex();
+    const plugins = Array.isArray((index as any).plugins) ? index.plugins : [];
+    const hooks = Array.isArray((index as any).hooks) ? index.hooks : [];
+    const workflows = Array.isArray((index as any).workflows) ? index.workflows : [];
 
     let allItems: any[] = [];
     const type = args.type ? args.type.toLowerCase() : 'all';
@@ -142,7 +145,10 @@ export class MCPTools {
         ...index.prompts,
         ...index.instructions,
         ...index.skills,
-        ...index.collections
+        ...index.collections,
+        ...plugins,
+        ...hooks,
+        ...workflows
       ];
     } else {
       // Direct type mapping
@@ -151,6 +157,9 @@ export class MCPTools {
       else if (type === 'instruction' || type === 'instructions') allItems = index.instructions;
       else if (type === 'skill' || type === 'skills') allItems = index.skills;
       else if (type === 'collection' || type === 'collections') allItems = index.collections;
+      else if (type === 'plugin' || type === 'plugins') allItems = plugins;
+      else if (type === 'hook' || type === 'hooks') allItems = hooks;
+      else if (type === 'workflow' || type === 'workflows') allItems = workflows;
     }
 
     return this.performSearch(allItems, args);
@@ -159,6 +168,9 @@ export class MCPTools {
   private async download(args: { name: string; type?: string }): Promise<{ name: string; type: string; url: string; path: string; description: string }> {
     if (!args || !args.name) throw new Error('Missing required argument: name');
     const index = await this.adapter.fetchIndex();
+    const plugins = Array.isArray((index as any).plugins) ? index.plugins : [];
+    const hooks = Array.isArray((index as any).hooks) ? index.hooks : [];
+    const workflows = Array.isArray((index as any).workflows) ? index.workflows : [];
     const type = args.type ? args.type.toLowerCase() : null;
 
     // Helper to find by name within a specific subset
@@ -179,6 +191,9 @@ export class MCPTools {
       if ((type === 'prompt' || type === 'prompts')) { const f = findIn(index.prompts); if (f) return formatResult(f); }
       if ((type === 'instruction' || type === 'instructions')) { const f = findIn(index.instructions); if (f) return formatResult(f); }
       if ((type === 'collection' || type === 'collections')) { const f = findIn(index.collections); if (f) return formatResult(f); }
+      if ((type === 'plugin' || type === 'plugins')) { const f = findIn(plugins); if (f) return formatResult(f); }
+      if ((type === 'hook' || type === 'hooks')) { const f = findIn(hooks); if (f) return formatResult(f); }
+      if ((type === 'workflow' || type === 'workflows')) { const f = findIn(workflows); if (f) return formatResult(f); }
     }
 
     // Generic priority order
@@ -187,6 +202,9 @@ export class MCPTools {
     const prompt = findIn(index.prompts); if (prompt) return formatResult(prompt);
     const instruction = findIn(index.instructions); if (instruction) return formatResult(instruction);
     const collection = findIn(index.collections); if (collection) return formatResult(collection);
+    const plugin = findIn(plugins); if (plugin) return formatResult(plugin);
+    const hook = findIn(hooks); if (hook) return formatResult(hook);
+    const workflow = findIn(workflows); if (workflow) return formatResult(workflow);
 
     throw new Error(`Item not found: ${args.name}`);
   }
@@ -194,7 +212,14 @@ export class MCPTools {
   private async refreshMetadata(): Promise<{ status: string; count: number; updated: string }> {
     const start = Date.now();
     const index = await this.adapter.refresh();
-    const count = index.agents.length + index.prompts.length + index.instructions.length + index.skills.length + index.collections.length;
+    const count = index.agents.length +
+      index.prompts.length +
+      index.instructions.length +
+      index.skills.length +
+      index.collections.length +
+      ((index as any).plugins?.length || 0) +
+      ((index as any).hooks?.length || 0) +
+      ((index as any).workflows?.length || 0);
 
     return {
       status: 'success',
