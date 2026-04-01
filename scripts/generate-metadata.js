@@ -309,6 +309,9 @@ function validateMetadata(metadata) {
   if (!Array.isArray(metadata.prompts)) {
     throw new Error('prompts must be an array');
   }
+  if (!Array.isArray(metadata.instructions)) {
+    throw new Error('instructions must be an array');
+  }
   if (!Array.isArray(metadata.skills)) {
     throw new Error('skills must be an array');
   }
@@ -366,7 +369,10 @@ async function compareMetadata(oldPath, newMetadata) {
       prompts: { old: oldCounts.prompts, new: newCounts.prompts, diff: newCounts.prompts - oldCounts.prompts },
       instructions: { old: oldCounts.instructions, new: newCounts.instructions, diff: newCounts.instructions - oldCounts.instructions },
       skills: { old: oldCounts.skills, new: newCounts.skills, diff: newCounts.skills - oldCounts.skills },
-      collections: { old: oldCounts.collections, new: newCounts.collections, diff: newCounts.collections - oldCounts.collections }
+      collections: { old: oldCounts.collections, new: newCounts.collections, diff: newCounts.collections - oldCounts.collections },
+      plugins: { old: oldCounts.plugins, new: newCounts.plugins, diff: newCounts.plugins - oldCounts.plugins },
+      hooks: { old: oldCounts.hooks, new: newCounts.hooks, diff: newCounts.hooks - oldCounts.hooks },
+      workflows: { old: oldCounts.workflows, new: newCounts.workflows, diff: newCounts.workflows - oldCounts.workflows }
     }
   };
 }

@@ -23,7 +23,7 @@ export class MCPResources {
             {
                 uri: 'awesome://metadata',
                 name: 'Complete Metadata Index',
-                description: 'Full index of all agents, prompts, instructions, skills, and collections',
+                description: 'Full index of all agents, prompts, instructions, skills, collections, plugins, hooks, and workflows',
                 mimeType: 'application/json'
             },
             {
@@ -512,7 +512,7 @@ export class MCPResources {
         const results: any[] = [];
 
         // Search based on type
-        if (type === 'agents' || type === 'all') {
+        if (type === 'agent' || type === 'agents' || type === 'all') {
             const agentResults = index.agents.filter(agent =>
                 agent.name.toLowerCase().includes(query) ||
                 agent.description.toLowerCase().includes(query) ||
@@ -521,7 +521,7 @@ export class MCPResources {
             results.push(...agentResults);
         }
 
-        if (type === 'prompts' || type === 'all') {
+        if (type === 'prompt' || type === 'prompts' || type === 'all') {
             const promptResults = index.prompts.filter(prompt =>
                 prompt.name.toLowerCase().includes(query) ||
                 prompt.description.toLowerCase().includes(query) ||
@@ -530,7 +530,7 @@ export class MCPResources {
             results.push(...promptResults);
         }
 
-        if (type === 'instructions' || type === 'all') {
+        if (type === 'instruction' || type === 'instructions' || type === 'all') {
             const instructionResults = index.instructions.filter(instruction =>
                 instruction.name.toLowerCase().includes(query) ||
                 instruction.description.toLowerCase().includes(query) ||
@@ -539,7 +539,7 @@ export class MCPResources {
             results.push(...instructionResults);
         }
 
-        if (type === 'skills' || type === 'all') {
+        if (type === 'skill' || type === 'skills' || type === 'all') {
             const skillResults = index.skills.filter(skill =>
                 skill.name.toLowerCase().includes(query) ||
                 skill.description.toLowerCase().includes(query) ||
@@ -548,7 +548,7 @@ export class MCPResources {
             results.push(...skillResults);
         }
 
-        if (type === 'collections' || type === 'all') {
+        if (type === 'collection' || type === 'collections' || type === 'all') {
             const collectionResults = index.collections.filter(collection =>
                 collection.name.toLowerCase().includes(query) ||
                 collection.description.toLowerCase().includes(query) ||
