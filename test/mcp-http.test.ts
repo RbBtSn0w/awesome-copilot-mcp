@@ -3,6 +3,7 @@ import request from 'supertest';
 import { HttpServer } from '../src/http-server';
 import { MCPTools } from '../src/mcp-tools';
 import { collectSseData } from './utils/sse';
+import { createMockAdapter } from './helpers/mock-adapter';
 
 const STREAM_ACCEPT = 'text/event-stream, application/json';
 
@@ -128,5 +129,79 @@ describe('MCP HTTP /mcp', () => {
     // wait to let mock detect abort
     await new Promise(r => setTimeout(r, 50));
     expect(aborted).toBe(true);
+  });
+
+  it('tools/call can search plugin resources through MCP JSON-RPC', async () => {
+    const handleToolSpy = vi.spyOn(MCPTools.prototype, 'handleTool').mockResolvedValue({
+      structuredContent: {
+        query: 'plugin',
+        count: 1,
+        items: [
+          {
+            name: 'test-plugin',
+            description: 'Plugin for testing',
+            type: 'plugin',
+            tags: ['plugin', 'test'],
+            path: 'plugins/test-plugin'
+          }
+        ]
+      }
+    } as any);
+
+    const res = await request(app)
+      .post('/mcp')
+      .set('Accept', STREAM_ACCEPT)
+      .send({ jsonrpc: '2.0', method: 'tools/call', params: { name: 'search', arguments: { query: 'plugin', type: 'plugin' } }, id: 'plugin-search' })
+      .expect(200);
+
+    const messages = collectSseData(res.text);
+    const response = messages.find((m: any) => m.result) ?? res.body;
+    const result = response?.result ?? response;
+    const output = JSON.stringify(result || {});
+
+    expect(handleToolSpy).toHaveBeenCalledWith(
+      'search',
+      { query: 'plugin', type: 'plugin' },
+      expect.objectContaining({ signal: expect.any(AbortSignal) })
+    );
+    expect(output.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it('resources/read can load plugin hook and workflow resources through MCP JSON-RPC', async () => {
+    const resourceServer = new HttpServer(createMockAdapter() as any);
+    const resourceApp = resourceServer.getApp();
+
+    const pluginRes = await request(resourceApp)
+      .post('/mcp')
+      .set('Accept', STREAM_ACCEPT)
+      .send({ jsonrpc: '2.0', method: 'resources/read', params: { uri: 'awesome://plugins/test-plugin' }, id: 'plugin-read' })
+      .expect(200);
+    const pluginMessages = collectSseData(pluginRes.text);
+    const pluginResponse = pluginMessages.find((m: any) => m.result) ?? pluginRes.body;
+    const pluginContent = JSON.parse((pluginResponse?.result?.contents ?? [])[0]?.text ?? '{}');
+    expect(pluginContent.type).toBe('plugin');
+    expect(pluginContent.name).toBe('test-plugin');
+
+    const hookRes = await request(resourceApp)
+      .post('/mcp')
+      .set('Accept', STREAM_ACCEPT)
+      .send({ jsonrpc: '2.0', method: 'resources/read', params: { uri: 'awesome://hooks/test-hook' }, id: 'hook-read' })
+      .expect(200);
+    const hookMessages = collectSseData(hookRes.text);
+    const hookResponse = hookMessages.find((m: any) => m.result) ?? hookRes.body;
+    const hookContent = JSON.parse((hookResponse?.result?.contents ?? [])[0]?.text ?? '{}');
+    expect(hookContent.type).toBe('hook');
+    expect(hookContent.name).toBe('test-hook');
+
+    const workflowRes = await request(resourceApp)
+      .post('/mcp')
+      .set('Accept', STREAM_ACCEPT)
+      .send({ jsonrpc: '2.0', method: 'resources/read', params: { uri: 'awesome://workflows/test-workflow' }, id: 'workflow-read' })
+      .expect(200);
+    const workflowMessages = collectSseData(workflowRes.text);
+    const workflowResponse = workflowMessages.find((m: any) => m.result) ?? workflowRes.body;
+    const workflowContent = JSON.parse((workflowResponse?.result?.contents ?? [])[0]?.text ?? '{}');
+    expect(workflowContent.type).toBe('workflow');
+    expect(workflowContent.name).toBe('test-workflow');
   });
 });
