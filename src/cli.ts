@@ -5,7 +5,7 @@ import chalk from 'chalk';
 import { MCPServer } from './mcp-server';
 import { GitHubAdapter } from './github-adapter';
 import { HttpServer } from './http-server';
-import { RepoConfig, CliOptions, ContentItem, Agent, Prompt, Instruction, Skill, Collection } from './types';
+import { RepoConfig, CliOptions, ContentItem, Skill, Collection } from './types';
 import { logger } from './logger';
 import * as fs from 'fs-extra';
 import * as path from 'path';
