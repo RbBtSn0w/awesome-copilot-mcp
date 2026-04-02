@@ -1,12 +1,13 @@
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { exec } from 'child_process';
 import * as path from 'path';
 import { promisify } from 'util';
-import { readFile } from 'node:fs/promises';
+import { copyFile, readFile, rm } from 'node:fs/promises';
 
 const execAsync = promisify(exec);
 const CLI_PATH = path.resolve(__dirname, '../dist/cli.js');
 const METADATA_PATH = path.resolve(process.cwd(), 'metadata.json');
+const FIXTURE_METADATA_PATH = path.resolve(__dirname, './fixtures/metadata.mock.json');
 
 describe('E2E CLI Tests', () => {
   let firstPluginName: string;
@@ -16,12 +17,17 @@ describe('E2E CLI Tests', () => {
   beforeAll(async () => {
     // Ensure build is fresh
     await execAsync('npm run build');
+    await copyFile(FIXTURE_METADATA_PATH, METADATA_PATH);
 
     const metadata = JSON.parse(await readFile(METADATA_PATH, 'utf8'));
     firstPluginName = metadata.plugins[0]?.name;
     firstHookName = metadata.hooks[0]?.name;
     firstWorkflowName = metadata.workflows[0]?.name;
   }, 30000);
+
+  afterAll(async () => {
+    await rm(METADATA_PATH, { force: true });
+  });
 
   it('should display help information', async () => {
     const { stdout } = await execAsync(`node ${CLI_PATH} --help`);

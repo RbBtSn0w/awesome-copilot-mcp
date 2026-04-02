@@ -508,80 +508,30 @@ export class MCPResources {
         const type = this.normalizeSearchType(parts[0]);
         const query = parts.slice(1).join('/').toLowerCase();
         const index = await this.adapter.fetchIndex();
+        const typeMap: Record<string, any[]> = {
+            agents: index.agents,
+            prompts: index.prompts,
+            instructions: index.instructions,
+            skills: index.skills,
+            collections: index.collections,
+            plugins: index.plugins,
+            hooks: index.hooks,
+            workflows: index.workflows
+        };
 
         const results: any[] = [];
+        const typesToSearch = type === 'all' ? Object.keys(typeMap) : [type];
 
-        // Search based on type
-        if (type === 'agent' || type === 'agents' || type === 'all') {
-            const agentResults = index.agents.filter(agent =>
-                agent.name.toLowerCase().includes(query) ||
-                agent.description.toLowerCase().includes(query) ||
-                agent.tags.some(tag => tag.toLowerCase().includes(query))
-            );
-            results.push(...agentResults);
-        }
+        for (const typeKey of typesToSearch) {
+            const items = typeMap[typeKey];
+            if (!items) continue;
 
-        if (type === 'prompt' || type === 'prompts' || type === 'all') {
-            const promptResults = index.prompts.filter(prompt =>
-                prompt.name.toLowerCase().includes(query) ||
-                prompt.description.toLowerCase().includes(query) ||
-                prompt.tags.some(tag => tag.toLowerCase().includes(query))
+            const filtered = items.filter(item =>
+                item.name.toLowerCase().includes(query) ||
+                item.description.toLowerCase().includes(query) ||
+                item.tags.some((tag: string) => tag.toLowerCase().includes(query))
             );
-            results.push(...promptResults);
-        }
-
-        if (type === 'instruction' || type === 'instructions' || type === 'all') {
-            const instructionResults = index.instructions.filter(instruction =>
-                instruction.name.toLowerCase().includes(query) ||
-                instruction.description.toLowerCase().includes(query) ||
-                instruction.tags.some(tag => tag.toLowerCase().includes(query))
-            );
-            results.push(...instructionResults);
-        }
-
-        if (type === 'skill' || type === 'skills' || type === 'all') {
-            const skillResults = index.skills.filter(skill =>
-                skill.name.toLowerCase().includes(query) ||
-                skill.description.toLowerCase().includes(query) ||
-                skill.tags.some(tag => tag.toLowerCase().includes(query))
-            );
-            results.push(...skillResults);
-        }
-
-        if (type === 'collection' || type === 'collections' || type === 'all') {
-            const collectionResults = index.collections.filter(collection =>
-                collection.name.toLowerCase().includes(query) ||
-                collection.description.toLowerCase().includes(query) ||
-                collection.tags.some(tag => tag.toLowerCase().includes(query))
-            );
-            results.push(...collectionResults);
-        }
-
-        if (type === 'plugins' || type === 'plugin' || type === 'all') {
-            const pluginResults = index.plugins.filter(plugin =>
-                plugin.name.toLowerCase().includes(query) ||
-                plugin.description.toLowerCase().includes(query) ||
-                plugin.tags.some(tag => tag.toLowerCase().includes(query))
-            );
-            results.push(...pluginResults);
-        }
-
-        if (type === 'hooks' || type === 'hook' || type === 'all') {
-            const hookResults = index.hooks.filter(hook =>
-                hook.name.toLowerCase().includes(query) ||
-                hook.description.toLowerCase().includes(query) ||
-                hook.tags.some(tag => tag.toLowerCase().includes(query))
-            );
-            results.push(...hookResults);
-        }
-
-        if (type === 'workflows' || type === 'workflow' || type === 'all') {
-            const workflowResults = index.workflows.filter(workflow =>
-                workflow.name.toLowerCase().includes(query) ||
-                workflow.description.toLowerCase().includes(query) ||
-                workflow.tags.some(tag => tag.toLowerCase().includes(query))
-            );
-            results.push(...workflowResults);
+            results.push(...filtered);
         }
 
         return {

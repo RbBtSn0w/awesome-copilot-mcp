@@ -299,36 +299,24 @@ async function parseCollection(filePath) {
 }
 
 function validateMetadata(metadata) {
-  const required = ['version', 'generatedAt', 'source', 'agents', 'prompts', 'instructions', 'skills', 'collections', 'plugins', 'hooks', 'workflows'];
+  const required = ['version', 'generatedAt', 'source'];
+  const contentTypes = ['agents', 'prompts', 'instructions', 'skills', 'collections', 'plugins', 'hooks', 'workflows'];
+
   for (const field of required) {
     if (!(field in metadata)) {
       throw new Error(`Missing required field: ${field}`);
     }
   }
 
-  if (!Array.isArray(metadata.agents)) {
-    throw new Error('agents must be an array');
-  }
-  if (!Array.isArray(metadata.prompts)) {
-    throw new Error('prompts must be an array');
-  }
-  if (!Array.isArray(metadata.instructions)) {
-    throw new Error('instructions must be an array');
-  }
-  if (!Array.isArray(metadata.skills)) {
-    throw new Error('skills must be an array');
-  }
-  if (!Array.isArray(metadata.collections)) {
-    throw new Error('collections must be an array');
-  }
-  if (!Array.isArray(metadata.plugins)) {
-    throw new Error('plugins must be an array');
-  }
-  if (!Array.isArray(metadata.hooks)) {
-    throw new Error('hooks must be an array');
-  }
-  if (!Array.isArray(metadata.workflows)) {
-    throw new Error('workflows must be an array');
+  for (const type of contentTypes) {
+    if (!(type in metadata)) {
+      metadata[type] = [];
+      continue;
+    }
+
+    if (!Array.isArray(metadata[type])) {
+      throw new Error(`${type} must be an array`);
+    }
   }
 
   return true;
