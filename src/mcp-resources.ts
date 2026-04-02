@@ -505,7 +505,7 @@ export class MCPResources {
             throw new Error('Invalid search URI format. Expected: awesome://search/{type}/{query}');
         }
 
-        const type = parts[0];
+        const type = this.normalizeSearchType(parts[0]);
         const query = parts.slice(1).join('/').toLowerCase();
         const index = await this.adapter.fetchIndex();
 
@@ -594,6 +594,40 @@ export class MCPResources {
                 results
             }, null, 2)
         };
+    }
+
+    private normalizeSearchType(rawType: string): string {
+        const value = (rawType || '').toLowerCase();
+        switch (value) {
+            case 'agent':
+            case 'agents':
+                return 'agents';
+            case 'prompt':
+            case 'prompts':
+                return 'prompts';
+            case 'instruction':
+            case 'instructions':
+                return 'instructions';
+            case 'skill':
+            case 'skills':
+                return 'skills';
+            case 'collection':
+            case 'collections':
+                return 'collections';
+            case 'plugin':
+            case 'plugins':
+                return 'plugins';
+            case 'hook':
+            case 'hooks':
+                return 'hooks';
+            case 'workflow':
+            case 'workflows':
+                return 'workflows';
+            case 'all':
+                return 'all';
+            default:
+                return value;
+        }
     }
 
     private async readResourcesByTag(uri: string): Promise<ResourceContent> {

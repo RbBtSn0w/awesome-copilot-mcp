@@ -12,6 +12,43 @@ import * as path from 'path';
 import { spawn } from 'child_process';
 import * as os from 'os';
 
+type NormalizedContentType = 'agents' | 'prompts' | 'instructions' | 'skills' | 'collections' | 'plugins' | 'hooks' | 'workflows' | 'all';
+
+const normalizeContentType = (rawType?: string): NormalizedContentType => {
+  const value = (rawType || '').toLowerCase();
+  switch (value) {
+    case 'agent':
+    case 'agents':
+      return 'agents';
+    case 'prompt':
+    case 'prompts':
+      return 'prompts';
+    case 'instruction':
+    case 'instructions':
+      return 'instructions';
+    case 'skill':
+    case 'skills':
+      return 'skills';
+    case 'collection':
+    case 'collections':
+      return 'collections';
+    case 'plugin':
+    case 'plugins':
+      return 'plugins';
+    case 'hook':
+    case 'hooks':
+      return 'hooks';
+    case 'workflow':
+    case 'workflows':
+      return 'workflows';
+    case 'all':
+    case '':
+      return 'all';
+    default:
+      return 'all';
+  }
+};
+
 const program = new Command();
 
 program
@@ -160,9 +197,9 @@ program
 
       const index = await adapter.fetchIndex();
       let items: ContentItem[] = [];
-
+      const normalizedType = normalizeContentType(type);
       // Determine which content type to explore
-      switch (type) {
+      switch (normalizedType) {
         case 'agents':
           items = index.agents;
           break;
@@ -216,7 +253,7 @@ program
       if (mergedOptions.json) {
         console.log(JSON.stringify(items, null, 2));
       } else {
-        displayContentItems(items, type || 'all');
+        displayContentItems(items, normalizedType);
       }
     } catch (error) {
       logger.error(`Explore failed: ${error}`);
@@ -314,9 +351,10 @@ program
 
       const index = await adapter.fetchIndex();
       let items: ContentItem[] = [];
+      const normalizedType = normalizeContentType(options.type);
 
       // Determine which content types to search
-      switch (options.type) {
+      switch (normalizedType) {
         case 'agents':
           items = index.agents;
           break;
@@ -376,21 +414,24 @@ program
         items = items.slice(0, mergedOptions.limit);
       }
 
+      const payload = {
+        query,
+        type: normalizedType,
+        count: items.length,
+        items: items.map(item => ({
+          name: item.name,
+          description: item.description,
+          type: item.type,
+          tags: item.tags || [],
+          path: item.path,
+          url: item.url
+        }))
+      };
+
       if (mergedOptions.json) {
-        console.log(JSON.stringify({
-          query: query,
-          count: items.length,
-          items: items.map(item => ({
-            name: item.name,
-            description: item.description,
-            type: item.type,
-            tags: item.tags || [],
-            path: item.path,
-            url: item.url
-          }))
-        }, null, 2));
+        console.log(JSON.stringify(payload, null, 2));
       } else {
-        displayContentItems(items, mergedOptions.type || 'all', query);
+        displayContentItems(items, normalizedType, query);
       }
     } catch (error) {
       logger.error(`Search failed: ${error}`);
@@ -420,9 +461,10 @@ program
 
       const index = await adapter.fetchIndex();
       let items: ContentItem[] = [];
+      const normalizedType = normalizeContentType(options.type);
 
       // Determine which content types to recommend from
-      switch (options.type) {
+      switch (normalizedType) {
         case 'agents':
           items = index.agents;
           break;
@@ -482,7 +524,7 @@ program
       if (mergedOptions.json) {
         console.log(JSON.stringify(recommendations, null, 2));
       } else {
-        displayRecommendations(recommendations, description, mergedOptions.type || 'all');
+        displayRecommendations(recommendations, description, normalizedType);
       }
     } catch (error) {
       logger.error(`Recommend failed: ${error}`);
