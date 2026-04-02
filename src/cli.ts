@@ -265,7 +265,7 @@ program
 // Get content command
 program
   .command('get <type> <name>')
-  .description('获取特定内容的详细信息 (agent, prompt, instruction, skill, collection, plugin, hook, workflow)')
+  .description('获取特定内容的详细信息 (agent(s), prompt(s), instruction(s), skill(s), collection(s), plugin(s), hook(s), workflow(s))')
   .action(async (type: string, name: string, options: CliOptions) => {
     try {
       const globalOptions = program.opts<CliOptions>();
@@ -281,30 +281,31 @@ program
 
       const index = await adapter.fetchIndex();
       let item: ContentItem | undefined;
+      const normalizedType = normalizeContentType(type);
 
-      switch (type) {
-        case 'agent':
+      switch (normalizedType) {
+        case 'agents':
           item = index.agents.find(a => a.name === name);
           break;
-        case 'prompt':
+        case 'prompts':
           item = index.prompts.find(p => p.name === name);
           break;
-        case 'instruction':
+        case 'instructions':
           item = index.instructions.find(i => i.name === name);
           break;
-        case 'skill':
+        case 'skills':
           item = index.skills.find(s => s.name === name);
           break;
-        case 'collection':
+        case 'collections':
           item = index.collections.find(c => c.name === name);
           break;
-        case 'plugin':
+        case 'plugins':
           item = index.plugins.find(p => p.name === name);
           break;
-        case 'hook':
+        case 'hooks':
           item = index.hooks.find(h => h.name === name);
           break;
-        case 'workflow':
+        case 'workflows':
           item = index.workflows.find(w => w.name === name);
           break;
         default:

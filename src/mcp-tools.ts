@@ -32,7 +32,7 @@ export class MCPTools {
     return [
       {
         name: 'search',
-        description: 'Search for content (agents, prompts, instructions, skills, collections).',
+        description: 'Search for content (agents, prompts, instructions, skills, collections, plugins, hooks, workflows).',
         inputSchema: {
           type: 'object',
           properties: {
