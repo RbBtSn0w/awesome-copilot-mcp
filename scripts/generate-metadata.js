@@ -77,7 +77,10 @@ async function fetchFile(filePath) {
   const url = `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/${GITHUB_BRANCH}/${filePath}`;
   try {
     const response = await client.get(url);
-    return response.data;
+    if (typeof response.data === 'string') {
+      return response.data;
+    }
+    return JSON.stringify(response.data);
   } catch (error) {
     console.warn(`Failed to fetch ${filePath}: ${error.message}`);
     return null;
