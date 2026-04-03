@@ -612,7 +612,7 @@ function displayContentItems(items: ContentItem[], type: string, query?: string)
   });
 }
 
-async function displayContentItemDetail(item: ContentItem, adapter?: GitHubAdapter): Promise<void> {
+async function displayContentItemDetail(item: ContentItem, _adapter?: GitHubAdapter): Promise<void> {
   const typeNames = {
     agent: 'AI助手',
     prompt: '提示词',

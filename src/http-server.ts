@@ -1,12 +1,10 @@
 import type { Express, Request, Response, NextFunction } from 'express';
-import express from 'express';
 import http from 'http';
 import https from 'https';
-import { hostHeaderValidation, localhostHostValidation } from '@modelcontextprotocol/sdk/server/middleware/hostHeaderValidation.js';
 import { createMcpExpressApp } from '@modelcontextprotocol/sdk/server/express.js';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
-import { IndexData, Agent, Prompt, Instruction, Skill, Collection } from './types';
+import { IndexData } from './types';
 import { logger } from './logger';
 import pkg from '../package.json';
 import { MCPTools } from './mcp-tools';

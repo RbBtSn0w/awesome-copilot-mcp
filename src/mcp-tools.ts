@@ -217,7 +217,6 @@ export class MCPTools {
   }
 
   private async refreshMetadata(): Promise<{ status: string; count: number; updated: string }> {
-    const start = Date.now();
     const index = await this.adapter.refresh();
     const count = index.agents.length +
       index.prompts.length +
