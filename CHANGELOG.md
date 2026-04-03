@@ -1,3 +1,10 @@
+## [0.5.1](https://github.com/RbBtSn0w/awesome-copilot-mcp/compare/v0.5.0...v0.5.1) (2026-04-03)
+
+
+### Bug Fixes
+
+* **github-adapter:** prioritize metadataUrl over bundled metadata.json in fetchIndex to ensure test isolation ([8eaa257](https://github.com/RbBtSn0w/awesome-copilot-mcp/commit/8eaa2571f52706db29797013fee246d547598867))
+
 # [0.5.0](https://github.com/RbBtSn0w/awesome-copilot-mcp/compare/v0.4.0...v0.5.0) (2026-04-03)
 
 
