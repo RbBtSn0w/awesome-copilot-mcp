@@ -137,15 +137,17 @@ export class GitHubAdapter {
       return null;
     }
 
+    const normalizeArray = <T>(value: unknown): T[] => Array.isArray(value) ? value : [];
+
     return {
       agents: metadata.agents || [],
-      prompts: metadata.prompts || [],
-      instructions: metadata.instructions || [],
-      skills: metadata.skills || [],
-      collections: metadata.collections || [],
-      plugins: metadata.plugins || [],
-      hooks: metadata.hooks || [],
-      workflows: metadata.workflows || [],
+      prompts: normalizeArray(metadata.prompts),
+      instructions: normalizeArray(metadata.instructions),
+      skills: normalizeArray(metadata.skills),
+      collections: normalizeArray(metadata.collections),
+      plugins: normalizeArray(metadata.plugins),
+      hooks: normalizeArray(metadata.hooks),
+      workflows: normalizeArray(metadata.workflows),
       lastUpdated: metadata.generatedAt || new Date().toISOString()
     };
   }

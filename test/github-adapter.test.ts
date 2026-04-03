@@ -250,6 +250,33 @@ describe('GitHubAdapter', () => {
       expect(mockGet).not.toHaveBeenCalled();
     });
 
+    it('coerces non-array metadata sections to empty arrays', async () => {
+      const mockGet = vi.fn();
+      (axios.create as any).mockReturnValue({ get: mockGet, interceptors: { request: { use: vi.fn() }, response: { use: vi.fn() } } });
+      vi.mocked(fs.pathExists).mockResolvedValue(false as never);
+      vi.mocked(fs.readJson).mockResolvedValue({
+        ...mockMetadata,
+        prompts: 'bad',
+        instructions: { nope: true },
+        skills: 1,
+        collections: true,
+        plugins: 'bad',
+        hooks: { nope: true },
+        workflows: 1
+      } as never);
+
+      adapter = new GitHubAdapter({ ...config, metadataUrl: '/tmp/meta.json' });
+      const index = await adapter.fetchIndex(true);
+
+      expect(index.prompts).toEqual([]);
+      expect(index.instructions).toEqual([]);
+      expect(index.skills).toEqual([]);
+      expect(index.collections).toEqual([]);
+      expect(index.plugins).toEqual([]);
+      expect(index.hooks).toEqual([]);
+      expect(index.workflows).toEqual([]);
+    });
+
     it('falls back to empty index when remote metadata is invalid', async () => {
       vi.mocked(fs.pathExists).mockResolvedValue(false as never);
       const fetchFileSpy = vi.spyOn(adapter as any, 'fetchFile').mockResolvedValue(JSON.stringify({ agents: [] }));

@@ -1,28 +1,32 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { spawn, ChildProcess } from 'child_process';
 import * as path from 'path';
-import { copyFile, readFile, rm } from 'node:fs/promises';
+import { copyFile, mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
 
 const CLI_PATH = path.resolve(__dirname, '../dist/cli.js');
-const METADATA_PATH = path.resolve(process.cwd(), 'metadata.mcp.json');
 const FIXTURE_METADATA_PATH = path.resolve(__dirname, './fixtures/metadata.mock.json');
 
 describe('STDIO MCP E2E Tests', () => {
   let serverProcess: ChildProcess;
   let requestId = 1;
+  let tempMetadataDir: string;
+  let tempMetadataPath: string;
 
   beforeAll(async () => {
     // Ensure build is fresh
     const { execSync } = await import('child_process');
     execSync('npm run build');
-    await copyFile(FIXTURE_METADATA_PATH, METADATA_PATH);
+    tempMetadataDir = await mkdtemp(path.join(tmpdir(), 'awesome-copilot-mcp-stdio-'));
+    tempMetadataPath = path.join(tempMetadataDir, 'metadata.mcp.json');
+    await copyFile(FIXTURE_METADATA_PATH, tempMetadataPath);
   }, 30000);
 
   afterAll(async () => {
     if (serverProcess) {
       serverProcess.kill();
     }
-    await rm(METADATA_PATH, { force: true });
+    await rm(tempMetadataDir, { recursive: true, force: true });
   });
 
   const sendRequest = (method: string, params: any = {}): Promise<any> => {
@@ -82,7 +86,7 @@ describe('STDIO MCP E2E Tests', () => {
     serverProcess = spawn('node', [CLI_PATH, 'start'], {
       env: {
         ...process.env,
-        ACP_METADATA_URL: METADATA_PATH
+        ACP_METADATA_URL: tempMetadataPath
       }
     });
     
@@ -205,9 +209,8 @@ describe('STDIO MCP E2E Tests', () => {
   });
 
   it('should handle corrupted metadata gracefully', async () => {
-    // Create a temporary corrupted metadata file
-    const corruptedPath = path.resolve(process.cwd(), 'metadata.corrupt.json');
-    await require('node:fs/promises').writeFile(corruptedPath, '{ invalid json }');
+    const corruptedPath = path.join(tempMetadataDir, 'metadata.corrupt.json');
+    await writeFile(corruptedPath, '{ invalid json }');
 
     const corruptServer = spawn('node', [CLI_PATH, 'start'], {
       env: {
@@ -267,7 +270,7 @@ describe('STDIO MCP E2E Tests', () => {
       
     } finally {
       corruptServer.kill();
-      await require('node:fs/promises').rm(corruptedPath, { force: true });
+      await rm(corruptedPath, { force: true });
     }
   });
 
