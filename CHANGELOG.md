@@ -1,3 +1,10 @@
+# [0.5.0](https://github.com/RbBtSn0w/awesome-copilot-mcp/compare/v0.4.0...v0.5.0) (2026-04-03)
+
+
+### Features
+
+* **agent:** synch with new tools ([a63ee49](https://github.com/RbBtSn0w/awesome-copilot-mcp/commit/a63ee49904cb2848a1121c11cc390ab460b13a10))
+
 # [0.4.0](https://github.com/RbBtSn0w/awesome-copilot-mcp/compare/v0.3.19...v0.4.0) (2026-04-03)
 
 
