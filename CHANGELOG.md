@@ -1,3 +1,17 @@
+# [0.4.0](https://github.com/RbBtSn0w/awesome-copilot-mcp/compare/v0.3.19...v0.4.0) (2026-04-03)
+
+
+### Bug Fixes
+
+* align schemas and tests for new resource types ([417124e](https://github.com/RbBtSn0w/awesome-copilot-mcp/commit/417124e739eb14730e27de83816421b0b8998534))
+* **lint:** remove unused variables and imports ([cc30440](https://github.com/RbBtSn0w/awesome-copilot-mcp/commit/cc30440ecce23c73c70e837f9897ec4a185aa823))
+
+
+### Features
+
+* enhance GitHubAdapter to support local metadata paths and improve error handling ([dd79bbb](https://github.com/RbBtSn0w/awesome-copilot-mcp/commit/dd79bbb8b3592536a4b44e7f73778f18e3e44279))
+* index plugins hooks and workflows ([1025714](https://github.com/RbBtSn0w/awesome-copilot-mcp/commit/102571470f6024482429f002c6865d98ce4e7fb9))
+
 ## [0.3.19](https://github.com/RbBtSn0w/awesome-copilot-mcp/compare/v0.3.18...v0.3.19) (2026-04-03)
 
 
