@@ -36,7 +36,9 @@ describe('E2E CLI Tests', () => {
   }, 30000);
 
   afterAll(async () => {
-    await rm(tempMetadataDir, { recursive: true, force: true });
+    if (tempMetadataDir) {
+      await rm(tempMetadataDir, { recursive: true, force: true });
+    }
   });
 
   it('should display help information', async () => {
@@ -46,19 +48,11 @@ describe('E2E CLI Tests', () => {
   });
 
   it('should support search command', async () => {
-     try {
-        const { stdout } = await execAsync(`node ${CLI_PATH} search "test" --json`, { env: cliEnv() });
-        // If it succeeds, it returns JSON
-        if (stdout) {
-            expect(stdout).toContain('query');
-        }
-     } catch (error: any) {
-        // If it fails, ensure it's a CLI execution error
-        console.log('Search command failed:', error.message);
-        // It's acceptable to fail if network is down or metadata missing, 
-        // but we want to ensure the CLI actually ran.
-        expect(error).toBeDefined();
-     }
+    const { stdout } = await execAsync(`node ${CLI_PATH} search "test" --json`, { env: cliEnv() });
+    const result = JSON.parse(stdout);
+
+    expect(result.query).toBe('test');
+    expect(Array.isArray(result.items)).toBe(true);
   });
 
   it('should show version', async () => {

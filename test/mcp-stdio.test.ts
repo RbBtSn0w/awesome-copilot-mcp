@@ -26,7 +26,9 @@ describe('STDIO MCP E2E Tests', () => {
     if (serverProcess) {
       serverProcess.kill();
     }
-    await rm(tempMetadataDir, { recursive: true, force: true });
+    if (tempMetadataDir) {
+      await rm(tempMetadataDir, { recursive: true, force: true });
+    }
   });
 
   const sendRequest = (method: string, params: any = {}): Promise<any> => {

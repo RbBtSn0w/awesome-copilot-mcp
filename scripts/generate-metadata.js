@@ -300,7 +300,8 @@ async function parseCollection(filePath) {
 
 function validateMetadata(metadata) {
   const required = ['version', 'generatedAt', 'source'];
-  const contentTypes = ['agents', 'prompts', 'instructions', 'skills', 'collections', 'plugins', 'hooks', 'workflows'];
+  const requiredContentTypes = ['agents', 'prompts', 'instructions', 'skills', 'collections'];
+  const optionalContentTypes = ['plugins', 'hooks', 'workflows'];
 
   for (const field of required) {
     if (!(field in metadata)) {
@@ -308,7 +309,17 @@ function validateMetadata(metadata) {
     }
   }
 
-  for (const type of contentTypes) {
+  for (const type of requiredContentTypes) {
+    if (!(type in metadata)) {
+      throw new Error(`Missing required field: ${type}`);
+    }
+
+    if (!Array.isArray(metadata[type])) {
+      throw new Error(`${type} must be an array`);
+    }
+  }
+
+  for (const type of optionalContentTypes) {
     if (!(type in metadata)) {
       metadata[type] = [];
       continue;
