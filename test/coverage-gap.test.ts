@@ -73,7 +73,7 @@ describe('Coverage Gap Tests', () => {
       const fetchFileSpy = vi.spyOn(adapterWithUrl as any, 'fetchFile').mockResolvedValue(JSON.stringify({ version: '1.0', agents: [] }));
 
       const index = await (adapterWithUrl as any).fetchRemoteIndex();
-      expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining('Failed to fetch hosted metadata'));
+      expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining('Failed to load configured metadata'));
       expect(fetchFileSpy).toHaveBeenCalledWith('metadata.json');
       expect(index.agents).toEqual([]);
     });

@@ -114,7 +114,7 @@ export interface RepoConfig {
   repo: string;
   branch?: string;
   token?: string;
-  metadataUrl?: string; // URL to hosted metadata.json (e.g., GitHub Pages)
+  metadataUrl?: string; // Hosted metadata URL or local metadata.json path
 }
 
 export interface IndexData {

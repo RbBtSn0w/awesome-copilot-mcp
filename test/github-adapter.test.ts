@@ -236,6 +236,20 @@ describe('GitHubAdapter', () => {
       expect(mockGet).toHaveBeenCalledWith('https://example.com/meta.json');
     });
 
+    it('uses local metadata path when provided', async () => {
+      const mockGet = vi.fn();
+      (axios.create as any).mockReturnValue({ get: mockGet, interceptors: { request: { use: vi.fn() }, response: { use: vi.fn() } } });
+      vi.mocked(fs.pathExists).mockResolvedValue(false as never);
+      vi.mocked(fs.readJson).mockResolvedValue(mockMetadata as never);
+
+      adapter = new GitHubAdapter({ ...config, metadataUrl: '/tmp/meta.json' });
+      const index = await adapter.fetchIndex(true);
+
+      expect(index.lastUpdated).toBe(mockMetadata.generatedAt);
+      expect(fs.readJson).toHaveBeenCalledWith('/tmp/meta.json');
+      expect(mockGet).not.toHaveBeenCalled();
+    });
+
     it('falls back to empty index when remote metadata is invalid', async () => {
       vi.mocked(fs.pathExists).mockResolvedValue(false as never);
       const fetchFileSpy = vi.spyOn(adapter as any, 'fetchFile').mockResolvedValue(JSON.stringify({ agents: [] }));

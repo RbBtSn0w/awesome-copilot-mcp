@@ -2,6 +2,7 @@ import axios, { AxiosInstance } from 'axios';
 import { RepoConfig, IndexData, CacheEntry } from './types';
 import * as fs from 'fs-extra';
 import * as path from 'path';
+import { fileURLToPath } from 'url';
 import { logger } from './logger';
 
 export class GitHubAdapter {
@@ -131,51 +132,76 @@ export class GitHubAdapter {
     return null;
   }
 
+  private toIndexData(metadata: any): IndexData | null {
+    if (!metadata?.version || !Array.isArray(metadata.agents)) {
+      return null;
+    }
+
+    return {
+      agents: metadata.agents || [],
+      prompts: metadata.prompts || [],
+      instructions: metadata.instructions || [],
+      skills: metadata.skills || [],
+      collections: metadata.collections || [],
+      plugins: metadata.plugins || [],
+      hooks: metadata.hooks || [],
+      workflows: metadata.workflows || [],
+      lastUpdated: metadata.generatedAt || new Date().toISOString()
+    };
+  }
+
+  private resolveMetadataSourcePath(metadataUrl: string): string | null {
+    if (/^https?:\/\//i.test(metadataUrl)) {
+      return null;
+    }
+
+    if (metadataUrl.startsWith('file://')) {
+      return fileURLToPath(metadataUrl);
+    }
+
+    return path.isAbsolute(metadataUrl) ? metadataUrl : path.resolve(metadataUrl);
+  }
+
   private async fetchRemoteIndex(): Promise<IndexData> {
     logger.info('Attempting to download lean metadata index...');
 
     if (this.repoConfig.metadataUrl) {
       try {
-        logger.info(`Fetching metadata from hosted URL: ${this.repoConfig.metadataUrl}`);
-        const response = await this.client.get(this.repoConfig.metadataUrl);
-        const metadata = response.data;
+        const metadataSourcePath = this.resolveMetadataSourcePath(this.repoConfig.metadataUrl);
 
-        if (metadata.version && Array.isArray(metadata.agents)) {
-          logger.info(`✓ Hosted metadata index loaded (v${metadata.version})`);
-          return {
-            agents: metadata.agents || [],
-            prompts: metadata.prompts || [],
-            instructions: metadata.instructions || [],
-            skills: metadata.skills || [],
-            collections: metadata.collections || [],
-            plugins: metadata.plugins || [],
-            hooks: metadata.hooks || [],
-            workflows: metadata.workflows || [],
-            lastUpdated: metadata.generatedAt || new Date().toISOString()
-          };
+        if (metadataSourcePath) {
+          logger.info(`Loading metadata from local path: ${metadataSourcePath}`);
+          const metadata = await fs.readJson(metadataSourcePath);
+          const index = this.toIndexData(metadata);
+
+          if (index) {
+            logger.info(`✓ Local metadata index loaded (v${metadata.version})`);
+            return index;
+          }
+        } else {
+          logger.info(`Fetching metadata from hosted URL: ${this.repoConfig.metadataUrl}`);
+          const response = await this.client.get(this.repoConfig.metadataUrl);
+          const metadata = response.data;
+          const index = this.toIndexData(metadata);
+
+          if (index) {
+            logger.info(`✓ Hosted metadata index loaded (v${metadata.version})`);
+            return index;
+          }
         }
       } catch (err) {
-        logger.warn(`Failed to fetch hosted metadata: ${err}`);
+        logger.warn(`Failed to load configured metadata: ${err}`);
       }
     }
 
     try {
       const content = await this.fetchFile('metadata.json');
       const metadata = JSON.parse(content);
+      const index = this.toIndexData(metadata);
 
-      if (metadata.version && Array.isArray(metadata.agents)) {
+      if (index) {
         logger.info(`✓ Remote metadata index loaded (v${metadata.version})`);
-        return {
-          agents: metadata.agents || [],
-          prompts: metadata.prompts || [],
-          instructions: metadata.instructions || [],
-          skills: metadata.skills || [],
-          collections: metadata.collections || [],
-          plugins: metadata.plugins || [],
-          hooks: metadata.hooks || [],
-          workflows: metadata.workflows || [],
-          lastUpdated: metadata.generatedAt || new Date().toISOString()
-        };
+        return index;
       }
       throw new Error('Invalid metadata format');
     } catch (err) {

@@ -197,6 +197,66 @@ describe('STDIO MCP E2E Tests', () => {
     });
   });
 
+  it('should handle corrupted metadata gracefully', async () => {
+    // Create a temporary corrupted metadata file
+    const corruptedPath = path.resolve(process.cwd(), 'metadata.corrupt.json');
+    await require('node:fs/promises').writeFile(corruptedPath, '{ invalid json }');
+
+    const corruptServer = spawn('node', [CLI_PATH, 'start'], {
+      env: {
+        ...process.env,
+        ACP_METADATA_URL: corruptedPath
+      }
+    });
+
+    let localRequestId = 1;
+    const sendLocalRequest = (method: string, params: any = {}): Promise<any> => {
+      return new Promise((resolve, reject) => {
+        const id = localRequestId++;
+        const request = { jsonrpc: '2.0', id, method, params };
+        const onData = (data: Buffer) => {
+          const lines = data.toString().split('\n').filter(l => l.trim());
+          for (const line of lines) {
+            try {
+              const response = JSON.parse(line);
+              if (response.id === id) {
+                corruptServer.stdout?.removeListener('data', onData);
+                resolve(response);
+                return;
+              }
+            } catch (e) {
+              // Not JSON
+            }
+          }
+        };
+        corruptServer.stdout?.on('data', onData);
+        corruptServer.stdin?.write(JSON.stringify(request) + '\n');
+        setTimeout(() => {
+          corruptServer.stdout?.removeListener('data', onData);
+          reject(new Error(`Local request ${method} timed out`));
+        }, 5000);
+      });
+    };
+
+    try {
+      const initResult = await sendLocalRequest('initialize', {
+        protocolVersion: '2024-11-05',
+        capabilities: {},
+        clientInfo: { name: 'test-client', version: '1.0.0' }
+      });
+      expect(initResult.result).toBeDefined();
+      
+      const resourcesResult = await sendLocalRequest('resources/list');
+      expect(resourcesResult.result).toBeDefined();
+      expect(Array.isArray(resourcesResult.result.resources)).toBe(true);
+      // Depending on fallback behavior, it might be empty or fallback to remote
+      
+    } finally {
+      corruptServer.kill();
+      await require('node:fs/promises').rm(corruptedPath, { force: true });
+    }
+  });
+
   it('should refresh metadata via tool and reflect changes', async () => {
     // This is hard to test "change" without mocking the adapter to return something else,
     // but we can at least verify the tool runs successfully.
