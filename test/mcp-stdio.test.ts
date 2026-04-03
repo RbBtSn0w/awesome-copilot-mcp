@@ -34,6 +34,13 @@ describe('STDIO MCP E2E Tests', () => {
         method,
         params
       };
+      let timeoutHandle: NodeJS.Timeout | undefined;
+      const cleanup = () => {
+        if (timeoutHandle) {
+          clearTimeout(timeoutHandle);
+        }
+        serverProcess.stdout?.removeListener('data', onData);
+      };
 
       const onData = (data: Buffer) => {
         const lines = data.toString().split('\n').filter(l => l.trim());
@@ -41,7 +48,7 @@ describe('STDIO MCP E2E Tests', () => {
           try {
             const response = JSON.parse(line);
             if (response.id === id) {
-              serverProcess.stdout?.removeListener('data', onData);
+              cleanup();
               resolve(response);
               return;
             }
@@ -55,8 +62,8 @@ describe('STDIO MCP E2E Tests', () => {
       serverProcess.stdin?.write(JSON.stringify(request) + '\n');
 
       // Timeout
-      setTimeout(() => {
-        serverProcess.stdout?.removeListener('data', onData);
+      timeoutHandle = setTimeout(() => {
+        cleanup();
         reject(new Error(`Request ${method} timed out`));
       }, 5000);
     });
@@ -214,13 +221,20 @@ describe('STDIO MCP E2E Tests', () => {
       return new Promise((resolve, reject) => {
         const id = localRequestId++;
         const request = { jsonrpc: '2.0', id, method, params };
+        let timeoutHandle: NodeJS.Timeout | undefined;
+        const cleanup = () => {
+          if (timeoutHandle) {
+            clearTimeout(timeoutHandle);
+          }
+          corruptServer.stdout?.removeListener('data', onData);
+        };
         const onData = (data: Buffer) => {
           const lines = data.toString().split('\n').filter(l => l.trim());
           for (const line of lines) {
             try {
               const response = JSON.parse(line);
               if (response.id === id) {
-                corruptServer.stdout?.removeListener('data', onData);
+                cleanup();
                 resolve(response);
                 return;
               }
@@ -231,8 +245,8 @@ describe('STDIO MCP E2E Tests', () => {
         };
         corruptServer.stdout?.on('data', onData);
         corruptServer.stdin?.write(JSON.stringify(request) + '\n');
-        setTimeout(() => {
-          corruptServer.stdout?.removeListener('data', onData);
+        timeoutHandle = setTimeout(() => {
+          cleanup();
           reject(new Error(`Local request ${method} timed out`));
         }, 5000);
       });
