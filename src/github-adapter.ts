@@ -227,6 +227,13 @@ export class GitHubAdapter {
         return cached;
       }
 
+      // If we have a custom metadata URL (local or remote), prioritize it over the bundled metadata
+      if (this.repoConfig.metadataUrl) {
+        const remoteMetadata = await this.fetchRemoteIndex();
+        this.setCached(cacheKey, remoteMetadata);
+        return remoteMetadata;
+      }
+
       const bundledMetadata = await this.loadBundledMetadata();
       if (bundledMetadata) {
         this.setCached(cacheKey, bundledMetadata);
