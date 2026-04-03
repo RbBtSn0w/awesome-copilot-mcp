@@ -23,7 +23,7 @@ export class MCPResources {
             {
                 uri: 'awesome://metadata',
                 name: 'Complete Metadata Index',
-                description: 'Full index of all agents, prompts, instructions, skills, and collections',
+                description: 'Full index of all agents, prompts, instructions, skills, collections, plugins, hooks, and workflows',
                 mimeType: 'application/json'
             },
             {
@@ -54,6 +54,24 @@ export class MCPResources {
                 uri: 'awesome://collections/index',
                 name: 'Collections Index',
                 description: 'List of all available collections',
+                mimeType: 'application/json'
+            },
+            {
+                uri: 'awesome://plugins/index',
+                name: 'Plugins Index',
+                description: 'List of all available plugins',
+                mimeType: 'application/json'
+            },
+            {
+                uri: 'awesome://hooks/index',
+                name: 'Hooks Index',
+                description: 'List of all available hooks',
+                mimeType: 'application/json'
+            },
+            {
+                uri: 'awesome://workflows/index',
+                name: 'Workflows Index',
+                description: 'List of all available agentic workflows',
                 mimeType: 'application/json'
             }
         ];
@@ -95,9 +113,27 @@ export class MCPResources {
                 mimeType: 'application/json'
             },
             {
+                uriTemplate: 'awesome://plugins/{name}',
+                name: 'plugin-info',
+                description: 'Get metadata for a specific plugin by name',
+                mimeType: 'application/json'
+            },
+            {
+                uriTemplate: 'awesome://hooks/{name}',
+                name: 'hook-info',
+                description: 'Get metadata for a specific hook by name',
+                mimeType: 'application/json'
+            },
+            {
+                uriTemplate: 'awesome://workflows/{name}',
+                name: 'workflow-info',
+                description: 'Get metadata for a specific workflow by name',
+                mimeType: 'application/json'
+            },
+            {
                 uriTemplate: 'awesome://search/{type}/{query}',
                 name: 'search-resources',
-                description: 'Search resources by type (agents/prompts/instructions/skills/collections/all) and query',
+                description: 'Search resources by type (agents/prompts/instructions/skills/collections/plugins/hooks/workflows/all) and query',
                 mimeType: 'application/json'
             },
             {
@@ -137,6 +173,15 @@ export class MCPResources {
             if (uri === 'awesome://collections/index') {
                 return await this.readCollectionsIndex();
             }
+            if (uri === 'awesome://plugins/index') {
+                return await this.readPluginsIndex();
+            }
+            if (uri === 'awesome://hooks/index') {
+                return await this.readHooksIndex();
+            }
+            if (uri === 'awesome://workflows/index') {
+                return await this.readWorkflowsIndex();
+            }
 
             // Handle template resources
             if (uri.startsWith('awesome://agents/')) {
@@ -153,6 +198,15 @@ export class MCPResources {
             }
             if (uri.startsWith('awesome://collections/')) {
                 return await this.readCollectionByName(uri);
+            }
+            if (uri.startsWith('awesome://plugins/')) {
+                return await this.readPluginByName(uri);
+            }
+            if (uri.startsWith('awesome://hooks/')) {
+                return await this.readHookByName(uri);
+            }
+            if (uri.startsWith('awesome://workflows/')) {
+                return await this.readWorkflowByName(uri);
             }
             if (uri.startsWith('awesome://search/')) {
                 return await this.readSearchResults(uri);
@@ -260,6 +314,58 @@ export class MCPResources {
         };
     }
 
+    private async readPluginsIndex(): Promise<ResourceContent> {
+        const index = await this.adapter.fetchIndex();
+        const pluginsList = index.plugins.map(plugin => ({
+            name: plugin.name,
+            description: plugin.description,
+            tags: plugin.tags,
+            version: plugin.version,
+            repository: plugin.repository,
+            homepage: plugin.homepage,
+            path: plugin.path,
+            url: plugin.url
+        }));
+        return {
+            uri: 'awesome://plugins/index',
+            mimeType: 'application/json',
+            text: JSON.stringify(pluginsList, null, 2)
+        };
+    }
+
+    private async readHooksIndex(): Promise<ResourceContent> {
+        const index = await this.adapter.fetchIndex();
+        const hooksList = index.hooks.map(hook => ({
+            name: hook.name,
+            description: hook.description,
+            tags: hook.tags,
+            files: hook.files,
+            path: hook.path,
+            url: hook.url
+        }));
+        return {
+            uri: 'awesome://hooks/index',
+            mimeType: 'application/json',
+            text: JSON.stringify(hooksList, null, 2)
+        };
+    }
+
+    private async readWorkflowsIndex(): Promise<ResourceContent> {
+        const index = await this.adapter.fetchIndex();
+        const workflowsList = index.workflows.map(workflow => ({
+            name: workflow.name,
+            description: workflow.description,
+            tags: workflow.tags,
+            path: workflow.path,
+            url: workflow.url
+        }));
+        return {
+            uri: 'awesome://workflows/index',
+            mimeType: 'application/json',
+            text: JSON.stringify(workflowsList, null, 2)
+        };
+    }
+
     private async readAgentByName(uri: string): Promise<ResourceContent> {
         const name = uri.replace('awesome://agents/', '');
         const index = await this.adapter.fetchIndex();
@@ -344,6 +450,54 @@ export class MCPResources {
         };
     }
 
+    private async readPluginByName(uri: string): Promise<ResourceContent> {
+        const name = uri.replace('awesome://plugins/', '');
+        const index = await this.adapter.fetchIndex();
+        const plugin = index.plugins.find(p => p.name === name);
+
+        if (!plugin) {
+            throw new Error(`Plugin not found: "${name}". \nHint: Resource templates require an EXACT name match. If you are unsure of the name, use "awesome://search/plugins/${name}" to search, or check "awesome://plugins/index" for a full list of available plugins.`);
+        }
+
+        return {
+            uri,
+            mimeType: 'application/json',
+            text: JSON.stringify(plugin, null, 2)
+        };
+    }
+
+    private async readHookByName(uri: string): Promise<ResourceContent> {
+        const name = uri.replace('awesome://hooks/', '');
+        const index = await this.adapter.fetchIndex();
+        const hook = index.hooks.find(h => h.name === name);
+
+        if (!hook) {
+            throw new Error(`Hook not found: "${name}". \nHint: Resource templates require an EXACT name match. If you are unsure of the name, use "awesome://search/hooks/${name}" to search, or check "awesome://hooks/index" for a full list of available hooks.`);
+        }
+
+        return {
+            uri,
+            mimeType: 'application/json',
+            text: JSON.stringify(hook, null, 2)
+        };
+    }
+
+    private async readWorkflowByName(uri: string): Promise<ResourceContent> {
+        const name = uri.replace('awesome://workflows/', '');
+        const index = await this.adapter.fetchIndex();
+        const workflow = index.workflows.find(w => w.name === name);
+
+        if (!workflow) {
+            throw new Error(`Workflow not found: "${name}". \nHint: Resource templates require an EXACT name match. If you are unsure of the name, use "awesome://search/workflows/${name}" to search, or check "awesome://workflows/index" for a full list of available workflows.`);
+        }
+
+        return {
+            uri,
+            mimeType: 'application/json',
+            text: JSON.stringify(workflow, null, 2)
+        };
+    }
+
     private async readSearchResults(uri: string): Promise<ResourceContent> {
         // Parse URI: awesome://search/{type}/{query}
         const parts = uri.replace('awesome://search/', '').split('/');
@@ -351,56 +505,33 @@ export class MCPResources {
             throw new Error('Invalid search URI format. Expected: awesome://search/{type}/{query}');
         }
 
-        const type = parts[0];
+        const type = this.normalizeSearchType(parts[0]);
         const query = parts.slice(1).join('/').toLowerCase();
         const index = await this.adapter.fetchIndex();
+        const typeMap: Record<string, any[]> = {
+            agents: index.agents,
+            prompts: index.prompts,
+            instructions: index.instructions,
+            skills: index.skills,
+            collections: index.collections,
+            plugins: index.plugins,
+            hooks: index.hooks,
+            workflows: index.workflows
+        };
 
         const results: any[] = [];
+        const typesToSearch = type === 'all' ? Object.keys(typeMap) : [type];
 
-        // Search based on type
-        if (type === 'agents' || type === 'all') {
-            const agentResults = index.agents.filter(agent =>
-                agent.name.toLowerCase().includes(query) ||
-                agent.description.toLowerCase().includes(query) ||
-                agent.tags.some(tag => tag.toLowerCase().includes(query))
-            );
-            results.push(...agentResults);
-        }
+        for (const typeKey of typesToSearch) {
+            const items = typeMap[typeKey];
+            if (!items) continue;
 
-        if (type === 'prompts' || type === 'all') {
-            const promptResults = index.prompts.filter(prompt =>
-                prompt.name.toLowerCase().includes(query) ||
-                prompt.description.toLowerCase().includes(query) ||
-                prompt.tags.some(tag => tag.toLowerCase().includes(query))
+            const filtered = items.filter(item =>
+                item.name.toLowerCase().includes(query) ||
+                item.description.toLowerCase().includes(query) ||
+                item.tags.some((tag: string) => tag.toLowerCase().includes(query))
             );
-            results.push(...promptResults);
-        }
-
-        if (type === 'instructions' || type === 'all') {
-            const instructionResults = index.instructions.filter(instruction =>
-                instruction.name.toLowerCase().includes(query) ||
-                instruction.description.toLowerCase().includes(query) ||
-                instruction.tags.some(tag => tag.toLowerCase().includes(query))
-            );
-            results.push(...instructionResults);
-        }
-
-        if (type === 'skills' || type === 'all') {
-            const skillResults = index.skills.filter(skill =>
-                skill.name.toLowerCase().includes(query) ||
-                skill.description.toLowerCase().includes(query) ||
-                skill.tags.some(tag => tag.toLowerCase().includes(query))
-            );
-            results.push(...skillResults);
-        }
-
-        if (type === 'collections' || type === 'all') {
-            const collectionResults = index.collections.filter(collection =>
-                collection.name.toLowerCase().includes(query) ||
-                collection.description.toLowerCase().includes(query) ||
-                collection.tags.some(tag => tag.toLowerCase().includes(query))
-            );
-            results.push(...collectionResults);
+            results.push(...filtered);
         }
 
         return {
@@ -415,6 +546,40 @@ export class MCPResources {
         };
     }
 
+    private normalizeSearchType(rawType: string): string {
+        const value = (rawType || '').toLowerCase();
+        switch (value) {
+            case 'agent':
+            case 'agents':
+                return 'agents';
+            case 'prompt':
+            case 'prompts':
+                return 'prompts';
+            case 'instruction':
+            case 'instructions':
+                return 'instructions';
+            case 'skill':
+            case 'skills':
+                return 'skills';
+            case 'collection':
+            case 'collections':
+                return 'collections';
+            case 'plugin':
+            case 'plugins':
+                return 'plugins';
+            case 'hook':
+            case 'hooks':
+                return 'hooks';
+            case 'workflow':
+            case 'workflows':
+                return 'workflows';
+            case 'all':
+                return 'all';
+            default:
+                return value;
+        }
+    }
+
     private async readResourcesByTag(uri: string): Promise<ResourceContent> {
         // Parse URI: awesome://tags/{tag}
         const tag = uri.replace('awesome://tags/', '').toLowerCase();
@@ -426,12 +591,16 @@ export class MCPResources {
             prompts: index.prompts.filter(p => p.tags.some(t => t.toLowerCase() === tag)),
             instructions: index.instructions.filter(i => i.tags.some(t => t.toLowerCase() === tag)),
             skills: index.skills.filter(s => s.tags.some(t => t.toLowerCase() === tag)),
-            collections: index.collections.filter(c => c.tags.some(t => t.toLowerCase() === tag))
+            collections: index.collections.filter(c => c.tags.some(t => t.toLowerCase() === tag)),
+            plugins: index.plugins.filter(p => p.tags.some(t => t.toLowerCase() === tag)),
+            hooks: index.hooks.filter(h => h.tags.some(t => t.toLowerCase() === tag)),
+            workflows: index.workflows.filter(w => w.tags.some(t => t.toLowerCase() === tag))
         };
 
         const totalCount = results.agents.length + results.prompts.length +
             results.instructions.length + results.skills.length +
-            results.collections.length;
+            results.collections.length + results.plugins.length +
+            results.hooks.length + results.workflows.length;
 
         return {
             uri,
@@ -443,7 +612,10 @@ export class MCPResources {
                 prompts: results.prompts,
                 instructions: results.instructions,
                 skills: results.skills,
-                collections: results.collections
+                collections: results.collections,
+                plugins: results.plugins,
+                hooks: results.hooks,
+                workflows: results.workflows
             }, null, 2)
         };
     }

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { Agent, Collection, RepoConfig, IndexData, SearchOptions, LoadOptions, CliOptions, CacheEntry, Prompt, Instruction, Skill } from '../src/types';
+import { Agent, Collection, RepoConfig, IndexData, SearchOptions, LoadOptions, CliOptions, CacheEntry, Prompt, Instruction, Skill, Plugin, Hook, Workflow } from '../src/types';
 
 describe('Types', () => {
   it('should define Agent interface', () => {
@@ -59,6 +59,49 @@ describe('Types', () => {
     expect(skill.type).toBe('skill');
   });
 
+  it('should define Plugin interface', () => {
+    const plugin: Plugin = {
+      name: 'test-plugin',
+      description: 'Test plugin',
+      tags: ['test'],
+      path: 'plugins/test-plugin',
+      url: 'https://github.com/test/plugin',
+      type: 'plugin',
+      version: '1.0.0'
+    };
+
+    expect(plugin.name).toBe('test-plugin');
+    expect(plugin.type).toBe('plugin');
+  });
+
+  it('should define Hook interface', () => {
+    const hook: Hook = {
+      name: 'test-hook',
+      description: 'Test hook',
+      tags: ['test'],
+      path: 'hooks/test-hook/README.md',
+      url: 'https://github.com/test/hook',
+      type: 'hook'
+    };
+
+    expect(hook.name).toBe('test-hook');
+    expect(hook.type).toBe('hook');
+  });
+
+  it('should define Workflow interface', () => {
+    const workflow: Workflow = {
+      name: 'test-workflow',
+      description: 'Test workflow',
+      tags: ['test'],
+      path: 'workflows/test-workflow.md',
+      url: 'https://github.com/test/workflow',
+      type: 'workflow'
+    };
+
+    expect(workflow.name).toBe('test-workflow');
+    expect(workflow.type).toBe('workflow');
+  });
+
   it('should define Collection interface', () => {
     const collection: Collection = {
       id: 'test-collection',
@@ -98,6 +141,9 @@ describe('Types', () => {
       instructions: [],
       skills: [],
       collections: [],
+      plugins: [],
+      hooks: [],
+      workflows: [],
       lastUpdated: '2024-01-01T00:00:00Z'
     };
 
@@ -123,6 +169,12 @@ describe('Types', () => {
     };
 
     expect(allTypes.type).toBe('all');
+
+    const pluginType: SearchOptions = {
+      query: 'plugin',
+      type: 'plugins'
+    };
+    expect(pluginType.type).toBe('plugins');
   });
 
   it('should define LoadOptions interface', () => {
@@ -156,10 +208,28 @@ describe('Types', () => {
       type: 'collection'
     };
 
+    const pluginOptions: LoadOptions = {
+      name: 'test-plugin',
+      type: 'plugin'
+    };
+
+    const hookOptions: LoadOptions = {
+      name: 'test-hook',
+      type: 'hook'
+    };
+
+    const workflowOptions: LoadOptions = {
+      name: 'test-workflow',
+      type: 'workflow'
+    };
+
     expect(promptOptions.type).toBe('prompt');
     expect(instructionOptions.type).toBe('instruction');
     expect(skillOptions.type).toBe('skill');
     expect(collectionOptions.type).toBe('collection');
+    expect(pluginOptions.type).toBe('plugin');
+    expect(hookOptions.type).toBe('hook');
+    expect(workflowOptions.type).toBe('workflow');
   });
 
   it('should define CliOptions interface', () => {

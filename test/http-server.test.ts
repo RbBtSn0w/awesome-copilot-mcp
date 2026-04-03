@@ -27,6 +27,9 @@ describe('HttpServer', () => {
     instructions: [],
     skills: [],
     collections: [],
+    plugins: [],
+    hooks: [],
+    workflows: [],
     lastUpdated: '2025-01-01T00:00:00Z'
   };
 

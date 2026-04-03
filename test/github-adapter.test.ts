@@ -27,7 +27,10 @@ describe('GitHubAdapter', () => {
     prompts: [],
     instructions: [],
     skills: [],
-    collections: []
+    collections: [],
+    plugins: [],
+    hooks: [],
+    workflows: []
   };
 
   beforeEach(() => {
@@ -59,6 +62,9 @@ describe('GitHubAdapter', () => {
         instructions: metadata.instructions,
         skills: metadata.skills,
         collections: metadata.collections,
+        plugins: metadata.plugins,
+        hooks: metadata.hooks,
+        workflows: metadata.workflows,
         lastUpdated: metadata.generatedAt
       });
 
@@ -134,6 +140,156 @@ describe('GitHubAdapter', () => {
       adapter = new GitHubAdapter(config);
       const index = await adapter.refresh();
       expect(index.lastUpdated).toBe('new');
+    });
+  });
+
+  describe('branch coverage helpers', () => {
+    it('expires cache entries based on ttl', () => {
+      (adapter as any).memoryCache.set('temp', { data: { ok: true }, timestamp: Date.now() - 5000, ttl: 1 });
+      const cached = (adapter as any).getCached('temp');
+      expect(cached).toBeNull();
+      expect((adapter as any).memoryCache.size).toBe(0);
+    });
+
+    it('returns cached file content on subsequent fetches', async () => {
+      const mockGet = vi.fn().mockResolvedValue({ data: 'file content' });
+      (axios.create as any).mockReturnValue({ get: mockGet, interceptors: { request: { use: vi.fn() }, response: { use: vi.fn() } } });
+
+      adapter = new GitHubAdapter(config);
+      const first = await adapter.fetchRawFile('path/to/file.txt');
+      const second = await adapter.fetchRawFile('path/to/file.txt');
+
+      expect(first).toBe('file content');
+      expect(second).toBe('file content');
+      expect(mockGet).toHaveBeenCalledTimes(1);
+    });
+
+    it('throws when requested skill is missing', async () => {
+      vi.spyOn(adapter, 'fetchIndex').mockResolvedValue({
+        agents: [],
+        prompts: [],
+        instructions: [],
+        skills: [],
+        collections: [],
+        plugins: [],
+        hooks: [],
+        workflows: [],
+        lastUpdated: 'now'
+      });
+
+      await expect(adapter.loadSkillDirectory('missing-skill')).rejects.toThrow('Skill not found: missing-skill');
+    });
+
+    it('returns files for existing skill and filters missing files', async () => {
+      vi.spyOn(adapter, 'fetchIndex').mockResolvedValue({
+        agents: [],
+        prompts: [],
+        instructions: [],
+        skills: [{ name: 'test-skill', description: '', tags: [], url: '', type: 'skill', path: 'skills/test-skill/SKILL.md', files: ['SKILL.md', 'EXTRA.md'] }],
+        collections: [],
+        plugins: [],
+        hooks: [],
+        workflows: [],
+        lastUpdated: 'now'
+      });
+      const fetchRawFileSpy = vi.spyOn(adapter, 'fetchRawFile').mockImplementation(async fullPath => {
+        if (fullPath.endsWith('EXTRA.md')) {
+          throw new Error('missing');
+        }
+        return 'content';
+      });
+
+      const result = await adapter.loadSkillDirectory('test-skill');
+      expect(result.name).toBe('test-skill');
+      expect(result.files).toEqual([{ path: 'SKILL.md', content: 'content' }]);
+      expect(fetchRawFileSpy).toHaveBeenCalledWith('skills/test-skill/SKILL.md');
+    });
+
+    it('logs and continues when bundled metadata cannot be read', async () => {
+      vi.mocked(fs.pathExists).mockRejectedValue(new Error('fs fail') as never);
+      const fetchRemoteIndexSpy = vi.spyOn(adapter as any, 'fetchRemoteIndex').mockResolvedValue({
+        agents: [],
+        prompts: [],
+        instructions: [],
+        skills: [],
+        collections: [],
+        plugins: [],
+        hooks: [],
+        workflows: [],
+        lastUpdated: 'remote'
+      });
+
+      const index = await adapter.fetchIndex();
+      expect(index.lastUpdated).toBe('remote');
+      expect(fetchRemoteIndexSpy).toHaveBeenCalled();
+    });
+
+    it('uses hosted metadataUrl when provided', async () => {
+      const mockGet = vi.fn().mockResolvedValue({ data: mockMetadata });
+      (axios.create as any).mockReturnValue({ get: mockGet, interceptors: { request: { use: vi.fn() }, response: { use: vi.fn() } } });
+      vi.mocked(fs.pathExists).mockResolvedValue(false as never);
+
+      adapter = new GitHubAdapter({ ...config, metadataUrl: 'https://example.com/meta.json' });
+      const index = await adapter.fetchIndex(true);
+
+      expect(index.lastUpdated).toBe(mockMetadata.generatedAt);
+      expect(mockGet).toHaveBeenCalledWith('https://example.com/meta.json');
+    });
+
+    it('uses local metadata path when provided', async () => {
+      const mockGet = vi.fn();
+      (axios.create as any).mockReturnValue({ get: mockGet, interceptors: { request: { use: vi.fn() }, response: { use: vi.fn() } } });
+      vi.mocked(fs.pathExists).mockResolvedValue(false as never);
+      vi.mocked(fs.readJson).mockResolvedValue(mockMetadata as never);
+
+      adapter = new GitHubAdapter({ ...config, metadataUrl: '/tmp/meta.json' });
+      const index = await adapter.fetchIndex(true);
+
+      expect(index.lastUpdated).toBe(mockMetadata.generatedAt);
+      expect(fs.readJson).toHaveBeenCalledWith('/tmp/meta.json');
+      expect(mockGet).not.toHaveBeenCalled();
+    });
+
+    it('coerces non-array metadata sections to empty arrays', async () => {
+      const mockGet = vi.fn();
+      (axios.create as any).mockReturnValue({ get: mockGet, interceptors: { request: { use: vi.fn() }, response: { use: vi.fn() } } });
+      vi.mocked(fs.pathExists).mockResolvedValue(false as never);
+      vi.mocked(fs.readJson).mockResolvedValue({
+        ...mockMetadata,
+        prompts: 'bad',
+        instructions: { nope: true },
+        skills: 1,
+        collections: true,
+        plugins: 'bad',
+        hooks: { nope: true },
+        workflows: 1
+      } as never);
+
+      adapter = new GitHubAdapter({ ...config, metadataUrl: '/tmp/meta.json' });
+      const index = await adapter.fetchIndex(true);
+
+      expect(index.prompts).toEqual([]);
+      expect(index.instructions).toEqual([]);
+      expect(index.skills).toEqual([]);
+      expect(index.collections).toEqual([]);
+      expect(index.plugins).toEqual([]);
+      expect(index.hooks).toEqual([]);
+      expect(index.workflows).toEqual([]);
+    });
+
+    it('falls back to empty index when remote metadata is invalid', async () => {
+      vi.mocked(fs.pathExists).mockResolvedValue(false as never);
+      const fetchFileSpy = vi.spyOn(adapter as any, 'fetchFile').mockResolvedValue(JSON.stringify({ agents: [] }));
+      const index = await adapter.fetchIndex(true);
+
+      expect(index.agents).toEqual([]);
+      expect(fetchFileSpy).toHaveBeenCalledWith('metadata.json');
+    });
+
+    it('clears cache explicitly', () => {
+      (adapter as any).setCached('key', { foo: 'bar' }, 3600);
+      adapter.clearCache();
+      expect((adapter as any).memoryCache.size).toBe(0);
     });
   });
 });

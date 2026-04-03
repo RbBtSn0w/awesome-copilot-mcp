@@ -1,6 +1,5 @@
 import { Prompt } from '@modelcontextprotocol/sdk/types.js';
 import dedent from 'dedent';
-import { logger } from './logger';
 
 export interface PromptDefinition {
   name: string;

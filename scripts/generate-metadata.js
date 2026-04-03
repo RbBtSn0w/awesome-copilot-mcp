@@ -77,7 +77,10 @@ async function fetchFile(filePath) {
   const url = `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/${GITHUB_BRANCH}/${filePath}`;
   try {
     const response = await client.get(url);
-    return response.data;
+    if (typeof response.data === 'string') {
+      return response.data;
+    }
+    return JSON.stringify(response.data);
   } catch (error) {
     console.warn(`Failed to fetch ${filePath}: ${error.message}`);
     return null;
@@ -296,21 +299,35 @@ async function parseCollection(filePath) {
 }
 
 function validateMetadata(metadata) {
-  const required = ['version', 'generatedAt', 'source', 'agents', 'prompts'];
+  const required = ['version', 'generatedAt', 'source'];
+  const requiredContentTypes = ['agents', 'prompts', 'instructions', 'skills', 'collections'];
+  const optionalContentTypes = ['plugins', 'hooks', 'workflows'];
+
   for (const field of required) {
     if (!(field in metadata)) {
       throw new Error(`Missing required field: ${field}`);
     }
   }
 
-  if (!Array.isArray(metadata.agents)) {
-    throw new Error('agents must be an array');
+  for (const type of requiredContentTypes) {
+    if (!(type in metadata)) {
+      throw new Error(`Missing required field: ${type}`);
+    }
+
+    if (!Array.isArray(metadata[type])) {
+      throw new Error(`${type} must be an array`);
+    }
   }
-  if (!Array.isArray(metadata.prompts)) {
-    throw new Error('prompts must be an array');
-  }
-  if (!Array.isArray(metadata.skills)) {
-    throw new Error('skills must be an array');
+
+  for (const type of optionalContentTypes) {
+    if (!(type in metadata)) {
+      metadata[type] = [];
+      continue;
+    }
+
+    if (!Array.isArray(metadata[type])) {
+      throw new Error(`${type} must be an array`);
+    }
   }
 
   return true;
@@ -327,7 +344,10 @@ async function compareMetadata(oldPath, newMetadata) {
     prompts: oldMetadata.prompts?.length || 0,
     instructions: oldMetadata.instructions?.length || 0,
     skills: oldMetadata.skills?.length || 0,
-    collections: oldMetadata.collections?.length || 0
+    collections: oldMetadata.collections?.length || 0,
+    plugins: oldMetadata.plugins?.length || 0,
+    hooks: oldMetadata.hooks?.length || 0,
+    workflows: oldMetadata.workflows?.length || 0
   };
 
   const newCounts = {
@@ -335,7 +355,10 @@ async function compareMetadata(oldPath, newMetadata) {
     prompts: newMetadata.prompts?.length || 0,
     instructions: newMetadata.instructions?.length || 0,
     skills: newMetadata.skills?.length || 0,
-    collections: newMetadata.collections?.length || 0
+    collections: newMetadata.collections?.length || 0,
+    plugins: newMetadata.plugins?.length || 0,
+    hooks: newMetadata.hooks?.length || 0,
+    workflows: newMetadata.workflows?.length || 0
   };
 
   const hasChanges = JSON.stringify(oldCounts) !== JSON.stringify(newCounts);
@@ -348,7 +371,10 @@ async function compareMetadata(oldPath, newMetadata) {
       prompts: { old: oldCounts.prompts, new: newCounts.prompts, diff: newCounts.prompts - oldCounts.prompts },
       instructions: { old: oldCounts.instructions, new: newCounts.instructions, diff: newCounts.instructions - oldCounts.instructions },
       skills: { old: oldCounts.skills, new: newCounts.skills, diff: newCounts.skills - oldCounts.skills },
-      collections: { old: oldCounts.collections, new: newCounts.collections, diff: newCounts.collections - oldCounts.collections }
+      collections: { old: oldCounts.collections, new: newCounts.collections, diff: newCounts.collections - oldCounts.collections },
+      plugins: { old: oldCounts.plugins, new: newCounts.plugins, diff: newCounts.plugins - oldCounts.plugins },
+      hooks: { old: oldCounts.hooks, new: newCounts.hooks, diff: newCounts.hooks - oldCounts.hooks },
+      workflows: { old: oldCounts.workflows, new: newCounts.workflows, diff: newCounts.workflows - oldCounts.workflows }
     }
   };
 }
@@ -372,6 +398,9 @@ async function verifyMetadataFile(filePath) {
     console.log(`  - Instructions: ${metadata.instructions?.length || 0}`);
     console.log(`  - Skills: ${metadata.skills?.length || 0}`);
     console.log(`  - Collections: ${metadata.collections?.length || 0}`);
+    console.log(`  - Plugins: ${metadata.plugins?.length || 0}`);
+    console.log(`  - Hooks: ${metadata.hooks?.length || 0}`);
+    console.log(`  - Workflows: ${metadata.workflows?.length || 0}`);
 
     return true;
   } catch (err) {
@@ -409,6 +438,90 @@ async function parseSkill(filePath, tree) {
   };
 }
 
+async function parseHook(readmePath, tree) {
+  const content = await fetchFile(readmePath);
+  if (!content) return null;
+
+  const hookDir = path.dirname(readmePath); // hooks/<hook-name>
+  const dirName = path.basename(hookDir);
+  const { frontmatter } = parseFrontmatter(content);
+
+  const name = frontmatter.name || dirName;
+  const description = frontmatter.description || `Hook: ${name}`;
+  const tags = Array.isArray(frontmatter.tags) ? frontmatter.tags : [];
+
+  const files = tree
+    .filter(item => item.path.startsWith(`${hookDir}/`) && item.type === 'blob')
+    .map(item => item.path.replace(`${hookDir}/`, ''));
+
+  return {
+    name,
+    description,
+    tags,
+    files,
+    path: readmePath,
+    type: 'hook',
+    url: `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/${GITHUB_BRANCH}/${readmePath}`
+  };
+}
+
+async function parseWorkflow(filePath) {
+  const content = await fetchFile(filePath);
+  if (!content) return null;
+
+  const baseName = path.basename(filePath, '.md');
+  const { frontmatter } = parseFrontmatter(content);
+  const name = frontmatter.name || baseName;
+  const description = frontmatter.description || `Workflow: ${name}`;
+  const tags = Array.isArray(frontmatter.tags) ? frontmatter.tags : [];
+
+  return {
+    name,
+    description,
+    tags,
+    path: filePath,
+    type: 'workflow',
+    url: `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/${GITHUB_BRANCH}/${filePath}`
+  };
+}
+
+async function parsePlugins() {
+  const content = await fetchFile('plugins/external.json');
+  if (!content) return [];
+
+  try {
+    const data = JSON.parse(content);
+    if (!Array.isArray(data)) return [];
+
+    return data.map(entry => {
+      const pathFallback = entry.source?.path || `plugins/external.json#${entry.name}`;
+      let url = entry.repository || entry.homepage || (entry.source?.repo ? `https://github.com/${entry.source.repo}` : null);
+
+      if (!url) {
+        url = `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/${GITHUB_BRANCH}/plugins/external.json#${encodeURIComponent(entry.name)}`;
+      }
+
+      return {
+        name: entry.name,
+        description: entry.description || `Plugin: ${entry.name}`,
+        tags: Array.isArray(entry.keywords) ? entry.keywords : [],
+        version: entry.version,
+        author: entry.author,
+        homepage: entry.homepage,
+        repository: entry.repository,
+        license: entry.license,
+        source: entry.source,
+        path: pathFallback,
+        type: 'plugin',
+        url
+      };
+    });
+  } catch (error) {
+    console.warn(`Failed to parse plugins from external.json: ${error.message}`);
+    return [];
+  }
+}
+
 async function generateMetadata() {
   console.log('Generating metadata.json...');
 
@@ -422,6 +535,8 @@ async function generateMetadata() {
   const instructionFiles = tree.filter(item => item.path.startsWith('instructions/') && item.path.endsWith('.instructions.md'));
   const collectionFiles = tree.filter(item => item.path.startsWith('collections/') && (item.path.endsWith('.collection.yml') || item.path.endsWith('.collection.yaml')));
   const skillFiles = tree.filter(item => item.path.startsWith('skills/') && path.basename(item.path) === 'SKILL.md');
+  const hookReadmes = tree.filter(item => item.path.startsWith('hooks/') && path.basename(item.path) === 'README.md');
+  const workflowFiles = tree.filter(item => item.path.startsWith('workflows/') && item.path.endsWith('.md'));
 
   // 3. Parse files in parallel
   // Parse agents
@@ -449,6 +564,19 @@ async function generateMetadata() {
     skillFiles.map(f => parseSkill(f.path, tree))
   )).filter(Boolean);
 
+  // Parse hooks
+  const hooks = (await Promise.all(
+    hookReadmes.map(f => parseHook(f.path, tree))
+  )).filter(Boolean);
+
+  // Parse workflows
+  const workflows = (await Promise.all(
+    workflowFiles.map(f => parseWorkflow(f.path))
+  )).filter(Boolean);
+
+  // Parse plugins (external.json)
+  const plugins = await parsePlugins();
+
   const metadata = {
     version: '1.0.0',
     generatedAt: new Date().toISOString(),
@@ -457,7 +585,10 @@ async function generateMetadata() {
     prompts,
     instructions,
     skills,
-    collections
+    collections,
+    plugins,
+    hooks,
+    workflows
   };
 
   return metadata;
@@ -500,6 +631,9 @@ async function main() {
     console.log(`  - Instructions: ${newMetadata.instructions.length}`);
     console.log(`  - Skills: ${newMetadata.skills.length}`);
     console.log(`  - Collections: ${newMetadata.collections.length}`);
+    console.log(`  - Plugins: ${newMetadata.plugins.length}`);
+    console.log(`  - Hooks: ${newMetadata.hooks.length}`);
+    console.log(`  - Workflows: ${newMetadata.workflows.length}`);
     console.log(`\nDone!`);
     process.exit(0);
   } catch (err) {

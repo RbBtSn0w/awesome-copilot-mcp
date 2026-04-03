@@ -50,7 +50,7 @@ export class MockGitHubAdapter extends GitHubAdapter {
 
                 if (fs.statSync(fullPath).isDirectory()) {
                     loadDirectory(fullPath, relativePath);
-                } else if (item.endsWith('.md')) {
+                } else if (item.endsWith('.md') || item.endsWith('.json')) {
                     const content = fs.readFileSync(fullPath, 'utf-8');
                     this.mockFiles.set(relativePath, content);
                 }

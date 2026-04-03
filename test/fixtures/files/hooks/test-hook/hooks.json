@@ -1,0 +1,8 @@
+{
+  "events": [
+    {
+      "on": "session_start",
+      "run": "./scripts/start.sh"
+    }
+  ]
+}

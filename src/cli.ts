@@ -5,12 +5,49 @@ import chalk from 'chalk';
 import { MCPServer } from './mcp-server';
 import { GitHubAdapter } from './github-adapter';
 import { HttpServer } from './http-server';
-import { RepoConfig, CliOptions, ContentItem, Agent, Prompt, Instruction, Skill, Collection } from './types';
+import { RepoConfig, CliOptions, ContentItem, Skill, Collection } from './types';
 import { logger } from './logger';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import { spawn } from 'child_process';
 import * as os from 'os';
+
+type NormalizedContentType = 'agents' | 'prompts' | 'instructions' | 'skills' | 'collections' | 'plugins' | 'hooks' | 'workflows' | 'all';
+
+const normalizeContentType = (rawType?: string): NormalizedContentType => {
+  const value = (rawType || '').toLowerCase();
+  switch (value) {
+    case 'agent':
+    case 'agents':
+      return 'agents';
+    case 'prompt':
+    case 'prompts':
+      return 'prompts';
+    case 'instruction':
+    case 'instructions':
+      return 'instructions';
+    case 'skill':
+    case 'skills':
+      return 'skills';
+    case 'collection':
+    case 'collections':
+      return 'collections';
+    case 'plugin':
+    case 'plugins':
+      return 'plugins';
+    case 'hook':
+    case 'hooks':
+      return 'hooks';
+    case 'workflow':
+    case 'workflows':
+      return 'workflows';
+    case 'all':
+    case '':
+      return 'all';
+    default:
+      return 'all';
+  }
+};
 
 const program = new Command();
 
@@ -142,7 +179,7 @@ program
 // Explore command
 program
   .command('explore [type]')
-  .description('探索可用的内容 (agents, prompts, instructions, skills, collections)')
+  .description('探索可用的内容 (agents, prompts, instructions, skills, collections, plugins, hooks, workflows)')
   .option('-t, --tags <tags>', '按标签过滤 (用逗号分隔)', (value) => value.split(','))
   .option('-l, --limit <number>', '限制结果数量', parseInt)
   .action(async (type: string | undefined, options: CliOptions & { tags?: string[], limit?: number }) => {
@@ -160,9 +197,9 @@ program
 
       const index = await adapter.fetchIndex();
       let items: ContentItem[] = [];
-
+      const normalizedType = normalizeContentType(type);
       // Determine which content type to explore
-      switch (type) {
+      switch (normalizedType) {
         case 'agents':
           items = index.agents;
           break;
@@ -178,6 +215,15 @@ program
         case 'collections':
           items = index.collections;
           break;
+        case 'plugins':
+          items = index.plugins;
+          break;
+        case 'hooks':
+          items = index.hooks;
+          break;
+        case 'workflows':
+          items = index.workflows;
+          break;
         default:
           // Show all content types
           items = [
@@ -185,7 +231,10 @@ program
             ...index.prompts,
             ...index.instructions,
             ...index.skills,
-            ...index.collections
+            ...index.collections,
+            ...index.plugins,
+            ...index.hooks,
+            ...index.workflows
           ];
           break;
       }
@@ -204,7 +253,7 @@ program
       if (mergedOptions.json) {
         console.log(JSON.stringify(items, null, 2));
       } else {
-        displayContentItems(items, type || 'all');
+        displayContentItems(items, normalizedType);
       }
     } catch (error) {
       logger.error(`Explore failed: ${error}`);
@@ -216,7 +265,7 @@ program
 // Get content command
 program
   .command('get <type> <name>')
-  .description('获取特定内容的详细信息 (agent, prompt, instruction, skill, collection)')
+  .description('获取特定内容的详细信息 (agent(s), prompt(s), instruction(s), skill(s), collection(s), plugin(s), hook(s), workflow(s))')
   .action(async (type: string, name: string, options: CliOptions) => {
     try {
       const globalOptions = program.opts<CliOptions>();
@@ -232,22 +281,32 @@ program
 
       const index = await adapter.fetchIndex();
       let item: ContentItem | undefined;
+      const normalizedType = normalizeContentType(type);
 
-      switch (type) {
-        case 'agent':
+      switch (normalizedType) {
+        case 'agents':
           item = index.agents.find(a => a.name === name);
           break;
-        case 'prompt':
+        case 'prompts':
           item = index.prompts.find(p => p.name === name);
           break;
-        case 'instruction':
+        case 'instructions':
           item = index.instructions.find(i => i.name === name);
           break;
-        case 'skill':
+        case 'skills':
           item = index.skills.find(s => s.name === name);
           break;
-        case 'collection':
+        case 'collections':
           item = index.collections.find(c => c.name === name);
+          break;
+        case 'plugins':
+          item = index.plugins.find(p => p.name === name);
+          break;
+        case 'hooks':
+          item = index.hooks.find(h => h.name === name);
+          break;
+        case 'workflows':
+          item = index.workflows.find(w => w.name === name);
           break;
         default:
           console.error(chalk.red(`Unknown content type: ${type}`));
@@ -275,7 +334,7 @@ program
 program
   .command('search <query>')
   .description('在所有内容中搜索')
-  .option('-t, --type <type>', '内容类型 (agents, prompts, instructions, skills, collections, all)', 'all')
+  .option('-t, --type <type>', '内容类型 (agents, prompts, instructions, skills, collections, plugins, hooks, workflows, all)', 'all')
   .option('--tags <tags>', '按标签过滤 (用逗号分隔)', (value) => value.split(','))
   .option('-l, --limit <number>', '限制结果数量', parseInt)
   .action(async (query: string, options: CliOptions & { type?: string, tags?: string[], limit?: number }) => {
@@ -293,9 +352,10 @@ program
 
       const index = await adapter.fetchIndex();
       let items: ContentItem[] = [];
+      const normalizedType = normalizeContentType(options.type);
 
       // Determine which content types to search
-      switch (options.type) {
+      switch (normalizedType) {
         case 'agents':
           items = index.agents;
           break;
@@ -311,6 +371,15 @@ program
         case 'collections':
           items = index.collections;
           break;
+        case 'plugins':
+          items = index.plugins;
+          break;
+        case 'hooks':
+          items = index.hooks;
+          break;
+        case 'workflows':
+          items = index.workflows;
+          break;
         case 'all':
         default:
           items = [
@@ -318,7 +387,10 @@ program
             ...index.prompts,
             ...index.instructions,
             ...index.skills,
-            ...index.collections
+            ...index.collections,
+            ...index.plugins,
+            ...index.hooks,
+            ...index.workflows
           ];
           break;
       }
@@ -343,21 +415,24 @@ program
         items = items.slice(0, mergedOptions.limit);
       }
 
+      const payload = {
+        query,
+        type: normalizedType,
+        count: items.length,
+        items: items.map(item => ({
+          name: item.name,
+          description: item.description,
+          type: item.type,
+          tags: item.tags || [],
+          path: item.path,
+          url: item.url
+        }))
+      };
+
       if (mergedOptions.json) {
-        console.log(JSON.stringify({
-          query: query,
-          count: items.length,
-          items: items.map(item => ({
-            name: item.name,
-            description: item.description,
-            type: item.type,
-            tags: item.tags || [],
-            path: item.path,
-            url: item.url
-          }))
-        }, null, 2));
+        console.log(JSON.stringify(payload, null, 2));
       } else {
-        displayContentItems(items, mergedOptions.type || 'all', query);
+        displayContentItems(items, normalizedType, query);
       }
     } catch (error) {
       logger.error(`Search failed: ${error}`);
@@ -370,7 +445,7 @@ program
 program
   .command('recommend <description>')
   .description('根据描述推荐相关的内容')
-  .option('-t, --type <type>', '内容类型 (agents, prompts, instructions, skills, collections, all)', 'all')
+  .option('-t, --type <type>', '内容类型 (agents, prompts, instructions, skills, collections, plugins, hooks, workflows, all)', 'all')
   .option('-l, --limit <number>', '限制推荐数量', parseInt)
   .action(async (description: string, options: CliOptions & { type?: string, limit?: number }) => {
     try {
@@ -387,9 +462,10 @@ program
 
       const index = await adapter.fetchIndex();
       let items: ContentItem[] = [];
+      const normalizedType = normalizeContentType(options.type);
 
       // Determine which content types to recommend from
-      switch (options.type) {
+      switch (normalizedType) {
         case 'agents':
           items = index.agents;
           break;
@@ -405,6 +481,15 @@ program
         case 'collections':
           items = index.collections;
           break;
+        case 'plugins':
+          items = index.plugins;
+          break;
+        case 'hooks':
+          items = index.hooks;
+          break;
+        case 'workflows':
+          items = index.workflows;
+          break;
         case 'all':
         default:
           items = [
@@ -412,7 +497,10 @@ program
             ...index.prompts,
             ...index.instructions,
             ...index.skills,
-            ...index.collections
+            ...index.collections,
+            ...index.plugins,
+            ...index.hooks,
+            ...index.workflows
           ];
           break;
       }
@@ -437,7 +525,7 @@ program
       if (mergedOptions.json) {
         console.log(JSON.stringify(recommendations, null, 2));
       } else {
-        displayRecommendations(recommendations, description, mergedOptions.type || 'all');
+        displayRecommendations(recommendations, description, normalizedType);
       }
     } catch (error) {
       logger.error(`Recommend failed: ${error}`);
@@ -497,6 +585,9 @@ function displayContentItems(items: ContentItem[], type: string, query?: string)
     instructions: '指令',
     skills: '技能',
     collections: '工具包集合',
+    plugins: '插件',
+    hooks: 'Hooks',
+    workflows: 'Agentic Workflows',
     all: '内容'
   };
 
@@ -521,13 +612,16 @@ function displayContentItems(items: ContentItem[], type: string, query?: string)
   });
 }
 
-async function displayContentItemDetail(item: ContentItem, adapter?: GitHubAdapter): Promise<void> {
+async function displayContentItemDetail(item: ContentItem, _adapter?: GitHubAdapter): Promise<void> {
   const typeNames = {
     agent: 'AI助手',
     prompt: '提示词',
     instruction: '指令',
     skill: '技能',
-    collection: '工具包集合'
+    collection: '工具包集合',
+    plugin: '插件',
+    hook: 'Hook',
+    workflow: 'Agentic Workflow'
   };
 
   const typeName = typeNames[item.type] || '内容';
@@ -576,6 +670,9 @@ function displayRecommendations(recommendations: ContentItem[], description: str
     instructions: '指令',
     skills: '技能',
     collections: '工具包集合',
+    plugins: '插件',
+    hooks: 'Hooks',
+    workflows: 'Agentic Workflows',
     all: '内容'
   };
 
@@ -603,6 +700,9 @@ function getTypeIcon(type: string): string {
     case 'instruction': return '📋';
     case 'skill': return '🛠️';
     case 'collection': return '📦';
+    case 'plugin': return '🎁';
+    case 'hook': return '🪝';
+    case 'workflow': return '⚡';
     default: return '📄';
   }
 }

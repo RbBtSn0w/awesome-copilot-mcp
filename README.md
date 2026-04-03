@@ -54,6 +54,19 @@ Available endpoints:
 - `GET /search?q=kw` Search
 - `GET /openapi.json` API Documentation
 
+### Supported Content Types
+
+This server now indexes all resources published in the official `github/awesome-copilot` repository:
+
+- 🤖 Agents
+- 💬 Prompts
+- 📋 Instructions
+- 🛠️ Skills (folder-aware)
+- 📦 Collections
+- 🎁 Plugins (from `plugins/external.json`)
+- 🪝 Hooks
+- ⚡ Agentic Workflows
+
 ## Debugging
 
 MCP Inspector is the recommended way to test and debug:
@@ -85,7 +98,7 @@ This server uses a **Bundled + In-Memory** architecture for maximum reliability:
 **Automated**: GitHub Actions runs daily to fetch the latest metadata from `github/awesome-copilot` and publishes a new npm version if changes are detected.
 
 **Internal**:
-The metadata file is lightweight (~170 KB) containing only index info. Actual content (Agent instructions, prompts) is fetched on-demand via the `download` tool.
+The metadata file is lightweight (~170 KB) containing only index info. Actual content and download targets for agents, prompts, instructions, skills, collections, plugins, hooks, and workflows are resolved on-demand via the exposed tools and resources.
 
 ## Development
 
