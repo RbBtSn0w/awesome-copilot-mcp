@@ -38,6 +38,7 @@ describe('STDIO MCP E2E Tests', () => {
         method,
         params
       };
+      let stdoutBuffer = '';
       let timeoutHandle: NodeJS.Timeout | undefined;
       const cleanup = () => {
         if (timeoutHandle) {
@@ -47,8 +48,12 @@ describe('STDIO MCP E2E Tests', () => {
       };
 
       const onData = (data: Buffer) => {
-        const lines = data.toString().split('\n').filter(l => l.trim());
+        stdoutBuffer += data.toString();
+        const lines = stdoutBuffer.split('\n');
+        stdoutBuffer = lines.pop() ?? '';
+
         for (const line of lines) {
+          if (!line.trim()) continue;
           try {
             const response = JSON.parse(line);
             if (response.id === id) {
@@ -224,6 +229,7 @@ describe('STDIO MCP E2E Tests', () => {
       return new Promise((resolve, reject) => {
         const id = localRequestId++;
         const request = { jsonrpc: '2.0', id, method, params };
+        let stdoutBuffer = '';
         let timeoutHandle: NodeJS.Timeout | undefined;
         const cleanup = () => {
           if (timeoutHandle) {
@@ -232,8 +238,12 @@ describe('STDIO MCP E2E Tests', () => {
           corruptServer.stdout?.removeListener('data', onData);
         };
         const onData = (data: Buffer) => {
-          const lines = data.toString().split('\n').filter(l => l.trim());
+          stdoutBuffer += data.toString();
+          const lines = stdoutBuffer.split('\n');
+          stdoutBuffer = lines.pop() ?? '';
+
           for (const line of lines) {
+            if (!line.trim()) continue;
             try {
               const response = JSON.parse(line);
               if (response.id === id) {

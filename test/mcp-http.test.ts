@@ -148,23 +148,27 @@ describe('MCP HTTP /mcp', () => {
       }
     } as any);
 
-    const res = await request(app)
-      .post('/mcp')
-      .set('Accept', STREAM_ACCEPT)
-      .send({ jsonrpc: '2.0', method: 'tools/call', params: { name: 'search', arguments: { query: 'plugin', type: 'plugin' } }, id: 'plugin-search' })
-      .expect(200);
+    try {
+      const res = await request(app)
+        .post('/mcp')
+        .set('Accept', STREAM_ACCEPT)
+        .send({ jsonrpc: '2.0', method: 'tools/call', params: { name: 'search', arguments: { query: 'plugin', type: 'plugin' } }, id: 'plugin-search' })
+        .expect(200);
 
-    const messages = collectSseData(res.text);
-    const response = messages.find((m: any) => m.result) ?? res.body;
-    const result = response?.result ?? response;
-    const output = JSON.stringify(result || {});
+      const messages = collectSseData(res.text);
+      const response = messages.find((m: any) => m.result) ?? res.body;
+      const result = response?.result ?? response;
+      const output = JSON.stringify(result || {});
 
-    expect(handleToolSpy).toHaveBeenCalledWith(
-      'search',
-      { query: 'plugin', type: 'plugin' },
-      expect.objectContaining({ signal: expect.any(AbortSignal) })
-    );
-    expect(output.length).toBeGreaterThanOrEqual(2);
+      expect(handleToolSpy).toHaveBeenCalledWith(
+        'search',
+        { query: 'plugin', type: 'plugin' },
+        expect.objectContaining({ signal: expect.any(AbortSignal) })
+      );
+      expect(output.length).toBeGreaterThanOrEqual(2);
+    } finally {
+      handleToolSpy.mockRestore();
+    }
   });
 
   it('resources/read can load plugin hook and workflow resources through MCP JSON-RPC', async () => {
