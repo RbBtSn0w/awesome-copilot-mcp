@@ -42,7 +42,7 @@ describe('Coverage Gap Tests', () => {
     it('should handle loadSkillDirectory errors for individual files', async () => {
       // Mock fetchIndex
       vi.spyOn(adapter, 'fetchIndex').mockResolvedValue({
-        agents: [], prompts: [], instructions: [], collections: [],
+        agents: [], prompts: [], instructions: [], collections: [], plugins: [], hooks: [], workflows: [],
         skills: [{ name: 'test-skill', description: 'desc', tags: [], path: 'skills/test-skill/SKILL.md', files: ['file1.md'], url: '', type: 'skill' }],
         lastUpdated: ''
       });

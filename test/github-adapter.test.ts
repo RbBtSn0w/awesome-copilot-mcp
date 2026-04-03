@@ -185,7 +185,7 @@ describe('GitHubAdapter', () => {
         agents: [],
         prompts: [],
         instructions: [],
-        skills: [{ name: 'test-skill', path: 'skills/test-skill/SKILL.md', files: ['SKILL.md', 'EXTRA.md'] }],
+        skills: [{ name: 'test-skill', description: '', tags: [], url: '', type: 'skill', path: 'skills/test-skill/SKILL.md', files: ['SKILL.md', 'EXTRA.md'] }],
         collections: [],
         plugins: [],
         hooks: [],
