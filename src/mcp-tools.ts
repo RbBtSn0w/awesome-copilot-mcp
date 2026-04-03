@@ -45,7 +45,8 @@ export class MCPTools {
               description: 'Optional content type filter (agent, prompt, instruction, skill, collection, plugin, hook, workflow).',
               enum: [
                 'agent', 'prompt', 'instruction', 'skill', 'collection', 'plugin', 'hook', 'workflow',
-                'agents', 'prompts', 'instructions', 'skills', 'collections', 'plugins', 'hooks', 'workflows'
+                'agents', 'prompts', 'instructions', 'skills', 'collections', 'plugins', 'hooks', 'workflows',
+                'all'
               ]
             },
             tags: {
