@@ -42,7 +42,23 @@ jobs:
         run: npm run build
 
       - name: Run semantic-release
+        id: semantic
+        uses: cycjimmy/semantic-release-action@v4
         env:
           GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: npx semantic-release
+
+      - name: Publish to GitHub Packages
+        if: steps.semantic.outputs.new_release_published == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Rename package to include scope for GitHub Packages
+          node -e "
+            const fs = require('fs');
+            const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+            pkg.name = '@RbBtSn0w/awesome-copilot-mcp';
+            pkg.publishConfig = { registry: 'https://npm.pkg.github.com/' };
+            fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2));
+          "
+          echo "//npm.pkg.github.com/:_authToken=${GITHUB_TOKEN}" > .npmrc
+          npm publish
