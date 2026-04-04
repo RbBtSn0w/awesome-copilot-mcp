@@ -1,3 +1,10 @@
+# [0.7.0](https://github.com/RbBtSn0w/awesome-copilot-mcp/compare/v0.6.3...v0.7.0) (2026-04-04)
+
+
+### Features
+
+* configure Dependabot auto-merge workflow for minor and patch updates ([391efe7](https://github.com/RbBtSn0w/awesome-copilot-mcp/commit/391efe71b42aecb1e9112141af65cbe772bf7cf0))
+
 ## [0.6.3](https://github.com/RbBtSn0w/awesome-copilot-mcp/compare/v0.6.2...v0.6.3) (2026-04-04)
 
 
