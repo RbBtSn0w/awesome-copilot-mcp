@@ -12,10 +12,9 @@ jobs:
       - name: Refresh Context7 Library
         env:
           CONTEXT7_API_KEY: ${{ secrets.CONTEXT7_API_KEY }}
-          DOCS_REPO_URL: "${{ github.server_url }}/${{ github.repository }}"
         run: |
-          echo "Triggering Context7 refresh for $DOCS_REPO_URL"
+          echo "Triggering Context7 refresh for ${{ github.repository }}"
           curl -X POST https://context7.com/api/v1/refresh \
           -H "Content-Type: application/json" \
           -H "Authorization: Bearer $CONTEXT7_API_KEY" \
-          -d "{\"docsRepoUrl\": \"$DOCS_REPO_URL\"}"
+          -d "{\"libraryName\": \"/${{ github.repository }}\"}"
