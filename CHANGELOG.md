@@ -1,3 +1,10 @@
+## [0.6.1](https://github.com/RbBtSn0w/awesome-copilot-mcp/compare/v0.6.0...v0.6.1) (2026-04-04)
+
+
+### Bug Fixes
+
+* **release:** add packages:write permission for GitHub Packages ([c0e755c](https://github.com/RbBtSn0w/awesome-copilot-mcp/commit/c0e755c42efd1fd5c3464b90ca33b5ac7121f2bb))
+
 # [0.6.0](https://github.com/RbBtSn0w/awesome-copilot-mcp/compare/v0.5.1...v0.6.0) (2026-04-04)
 
 
