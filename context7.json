@@ -2,7 +2,9 @@
   "$schema": "https://context7.com/schema/context7.json",
   "projectTitle": "Awesome Copilot MCP",
   "description": "Model Context Protocol server for awesome-copilot agents and collections",
-  "folders": ["."],
+  "folders": [
+    "."
+  ],
   "excludeFolders": [
     "node_modules",
     "dist",
@@ -25,5 +27,7 @@
     "commitlint.config.js",
     "release.config.js",
     "mcp-config.sample.json"
-  ]
+  ],
+  "url": "https://context7.com/rbbtsn0w/awesome-copilot-mcp",
+  "public_key": "pk_aQ1hbIauyjluksuheJvn9"
 }

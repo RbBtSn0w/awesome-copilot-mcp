@@ -1,20 +1,17 @@
-name: Publish to Context7
+name: Refresh Context7 Docs
 
 on:
-  release:
-    types: [published]
+  push:
+    branches:
+      - main # change to your default branch if different
 
 jobs:
-  publish-context7:
-    name: Refresh Context7 Library
+  refresh:
     runs-on: ubuntu-latest
     steps:
-      - name: Refresh Context7 Library
-        env:
-          CONTEXT7_API_KEY: ${{ secrets.CONTEXT7_API_KEY }}
+      - name: Trigger Context7 Refresh
         run: |
-          echo "Triggering Context7 refresh for ${{ github.repository }}"
-          curl -X POST https://context7.com/api/v1/refresh \
-          -H "Content-Type: application/json" \
-          -H "Authorization: Bearer $CONTEXT7_API_KEY" \
-          -d "{\"libraryName\": \"/${{ github.repository }}\"}"
+          curl -s -X POST https://context7.com/api/v1/refresh \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${{ secrets.CONTEXT7_API_KEY }}" \
+            -d '{"libraryName": "/${{ github.repository }}"}'
