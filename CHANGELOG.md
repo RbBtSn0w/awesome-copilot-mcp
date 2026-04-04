@@ -1,3 +1,10 @@
+## [0.6.3](https://github.com/RbBtSn0w/awesome-copilot-mcp/compare/v0.6.2...v0.6.3) (2026-04-04)
+
+
+### Bug Fixes
+
+* test OIDC publishing with empty commit ([c5e8910](https://github.com/RbBtSn0w/awesome-copilot-mcp/commit/c5e891012066317063ae2a696d04431faa036da1))
+
 ## [0.6.2](https://github.com/RbBtSn0w/awesome-copilot-mcp/compare/v0.6.1...v0.6.2) (2026-04-04)
 
 
