@@ -44,6 +44,12 @@ jobs:
       - name: Run semantic-release
         id: semantic
         uses: cycjimmy/semantic-release-action@v4
+        with:
+          semantic_version: 25
+          extra_plugins: |
+            @semantic-release/changelog
+            @semantic-release/git
+            @semantic-release/exec
         env:
           GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
 
