@@ -74,13 +74,5 @@ jobs:
         echo "Version set to $(node -p "require('./package.json').version")"
 
     - name: Publish to npm
-      env:
-        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        if [ -z "$NODE_AUTH_TOKEN" ]; then
-          echo "Error: NPM_TOKEN secret is missing!"
-          exit 1
-        fi
-        npm ping
         npm publish --tag beta --provenance --access public
