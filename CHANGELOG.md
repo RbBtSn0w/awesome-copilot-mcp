@@ -1,3 +1,10 @@
+## [0.6.2](https://github.com/RbBtSn0w/awesome-copilot-mcp/compare/v0.6.1...v0.6.2) (2026-04-04)
+
+
+### Bug Fixes
+
+* **release:** fix Context7 refresh API payload field name ([e936507](https://github.com/RbBtSn0w/awesome-copilot-mcp/commit/e9365070869044cf5b11afc277ad673858325055))
+
 ## [0.6.1](https://github.com/RbBtSn0w/awesome-copilot-mcp/compare/v0.6.0...v0.6.1) (2026-04-04)
 
 
