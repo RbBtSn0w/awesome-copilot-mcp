@@ -43,7 +43,8 @@ jobs:
         file: ./coverage/lcov.info
         token: ${{ secrets.CODECOV_TOKEN }}
 
-  publish:
+  publish-beta:
+    name: Publish Beta Release to npm
     needs: test
     runs-on: ubuntu-latest
     # Only run publish on manual trigger from main branch

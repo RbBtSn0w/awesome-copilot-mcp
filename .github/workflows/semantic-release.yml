@@ -1,4 +1,4 @@
-name: Semantic Release
+name: Release & Distribute
 
 on:
   workflow_dispatch:
