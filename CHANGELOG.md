@@ -1,3 +1,15 @@
+# [0.6.0](https://github.com/RbBtSn0w/awesome-copilot-mcp/compare/v0.5.1...v0.6.0) (2026-04-04)
+
+
+### Bug Fixes
+
+* **release:** force semantic-release version 25 in workflow for OIDC support ([fc3f9fa](https://github.com/RbBtSn0w/awesome-copilot-mcp/commit/fc3f9fa338ee435034347ca659c43346819083cc))
+
+
+### Features
+
+* **release:** migrate to npm Trusted Publishing and add GitHub Packages support ([31179d1](https://github.com/RbBtSn0w/awesome-copilot-mcp/commit/31179d1500d3294aff08ff1505ba79cb6eb28c22))
+
 ## [0.5.1](https://github.com/RbBtSn0w/awesome-copilot-mcp/compare/v0.5.0...v0.5.1) (2026-04-03)
 
 
