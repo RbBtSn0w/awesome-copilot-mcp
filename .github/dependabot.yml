@@ -4,7 +4,37 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+    commit-message:
+      prefix: "chore(deps)"
+      prefix-development: "chore(deps-dev)"
     groups:
-      dependencies:
+      npm-production:
+        dependency-type: "production"
+        update-types:
+          - "minor"
+          - "patch"
+      npm-development:
+        dependency-type: "development"
+        update-types:
+          - "minor"
+          - "patch"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "github-actions"
+    commit-message:
+      prefix: "ci(deps)"
+    groups:
+      github-actions:
         patterns:
-          - "*" # 将所有依赖合并到一个组中处理
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"

@@ -17,15 +17,22 @@ jobs:
         with:
           github-token: "${{ secrets.GITHUB_TOKEN }}"
 
-      - name: Approve a PR
-        run: gh pr approve "$PR_URL"
-        env:
-          PR_URL: ${{github.event.pull_request.html_url}}
-          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
-
-      - name: Enable auto-merge for Dependabot PRs
+      - name: Auto-approve patch and minor updates
         if: steps.metadata.outputs.update-type != 'version-update:semver-major'
-        run: gh pr merge --auto --merge "$PR_URL"
+        run: gh pr review --approve "$PR_URL"
         env:
-          PR_URL: ${{github.event.pull_request.html_url}}
-          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Enable auto-merge (squash)
+        if: steps.metadata.outputs.update-type != 'version-update:semver-major'
+        run: gh pr merge --auto --squash "$PR_URL"
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Alert on major update
+        if: steps.metadata.outputs.update-type == 'version-update:semver-major'
+        run: |
+          echo "::warning::Major version update detected: ${{ steps.metadata.outputs.dependency-names }} (${{ steps.metadata.outputs.previous-version }} → ${{ steps.metadata.outputs.new-version }})"
+          echo "Manual review required for major updates."
