@@ -26,6 +26,8 @@
     "lint:fix": "eslint src/**/*.ts --fix",
     "typecheck": "tsc --noEmit -p tsconfig.build.json",
     "prepublishOnly": "npm run clean && npm run generate-metadata && npm run build && npm run test:coverage",
+    "prepare": "npm run build",
+    "postinstall": "sed -i '' 's/var handleFetchError = (e) => new Response(null, {/var handleFetchError = (e) => { console.error(\"HONO FATAL ERROR:\", e); return new Response(null, {/g' node_modules/@hono/node-server/dist/server.js || sed -i 's/var handleFetchError = (e) => new Response(null, {/var handleFetchError = (e) => { console.error(\"HONO FATAL ERROR:\", e); return new Response(null, {/g' node_modules/@hono/node-server/dist/server.js",
     "ci": "npm run clean && npm run build && npm run lint && npm run test:coverage",
     "start": "node dist/cli.js start",
     "start-http": "node dist/cli.js start-http",
