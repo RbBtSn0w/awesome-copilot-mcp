@@ -1,4 +1,4 @@
-import express, { type Express, type Request, type Response, type NextFunction } from 'express';
+import type { Express, Request, Response, NextFunction } from 'express';
 import http from 'http';
 import https from 'https';
 import { createMcpExpressApp } from '@modelcontextprotocol/sdk/server/express.js';

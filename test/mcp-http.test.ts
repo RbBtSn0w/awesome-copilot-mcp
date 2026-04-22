@@ -102,6 +102,7 @@ describe('MCP HTTP /mcp', () => {
       .post('/mcp')
       .set('Accept', STREAM_ACCEPT)
       .send({ jsonrpc: '2.0', method: 'tools/call', params: { name: 'search_agents', arguments: { query: 'bad' }, stream: true }, id: 'r4' })
+      .expect((res) => { if (res.status !== 200) console.error('RES2 ERROR:', res.status, res.body, res.text); })
       .expect(200);
 
     const output2 = res2.text || JSON.stringify(res2.body || {});
