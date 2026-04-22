@@ -221,8 +221,15 @@ export class HttpServer {
     const handleMcpRequest = async (req: Request, res: Response) => {
       try {
         await this.ensureConnected();
-        // createMcpExpressApp includes body-parser, so we must pass the parsed body
-        // to the transport if available.
+        
+        try {
+            // Attempt to proactively access the web stream to catch the error
+            const { Readable } = require('stream');
+            Readable.toWeb(req);
+        } catch (err: any) {
+            logger.error(`PROACTIVE STREAM ERROR: ${err.message}\n${err.stack}`);
+        }
+
         await this.transport.handleRequest(req as any, res as any, req.body);
       } catch (error) {
         const errorMsg = error instanceof Error ? error.message : String(error);
