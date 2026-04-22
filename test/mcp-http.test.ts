@@ -16,6 +16,10 @@ describe('MCP HTTP /mcp', () => {
     app = server.getApp();
   });
 
+  afterEach(async () => {
+    await server.stop();
+  });
+
   it('rejects invalid JSON-RPC requests', async () => {
     const res = await request(app).post('/mcp').set('Accept', STREAM_ACCEPT).send({}).expect(400);
     expect(res.body).toHaveProperty('error');
@@ -175,37 +179,41 @@ describe('MCP HTTP /mcp', () => {
     const resourceServer = new HttpServer(createMockAdapter() as any);
     const resourceApp = resourceServer.getApp();
 
-    const pluginRes = await request(resourceApp)
-      .post('/mcp')
-      .set('Accept', STREAM_ACCEPT)
-      .send({ jsonrpc: '2.0', method: 'resources/read', params: { uri: 'awesome://plugins/test-plugin' }, id: 'plugin-read' })
-      .expect(200);
-    const pluginMessages = collectSseData(pluginRes.text);
-    const pluginResponse = pluginMessages.find((m: any) => m.result) ?? pluginRes.body;
-    const pluginContent = JSON.parse((pluginResponse?.result?.contents ?? [])[0]?.text ?? '{}');
-    expect(pluginContent.type).toBe('plugin');
-    expect(pluginContent.name).toBe('test-plugin');
+    try {
+      const pluginRes = await request(resourceApp)
+        .post('/mcp')
+        .set('Accept', STREAM_ACCEPT)
+        .send({ jsonrpc: '2.0', method: 'resources/read', params: { uri: 'awesome://plugins/test-plugin' }, id: 'plugin-read' })
+        .expect(200);
+      const pluginMessages = collectSseData(pluginRes.text);
+      const pluginResponse = pluginMessages.find((m: any) => m.result) ?? pluginRes.body;
+      const pluginContent = JSON.parse((pluginResponse?.result?.contents ?? [])[0]?.text ?? '{}');
+      expect(pluginContent.type).toBe('plugin');
+      expect(pluginContent.name).toBe('test-plugin');
 
-    const hookRes = await request(resourceApp)
-      .post('/mcp')
-      .set('Accept', STREAM_ACCEPT)
-      .send({ jsonrpc: '2.0', method: 'resources/read', params: { uri: 'awesome://hooks/test-hook' }, id: 'hook-read' })
-      .expect(200);
-    const hookMessages = collectSseData(hookRes.text);
-    const hookResponse = hookMessages.find((m: any) => m.result) ?? hookRes.body;
-    const hookContent = JSON.parse((hookResponse?.result?.contents ?? [])[0]?.text ?? '{}');
-    expect(hookContent.type).toBe('hook');
-    expect(hookContent.name).toBe('test-hook');
+      const hookRes = await request(resourceApp)
+        .post('/mcp')
+        .set('Accept', STREAM_ACCEPT)
+        .send({ jsonrpc: '2.0', method: 'resources/read', params: { uri: 'awesome://hooks/test-hook' }, id: 'hook-read' })
+        .expect(200);
+      const hookMessages = collectSseData(hookRes.text);
+      const hookResponse = hookMessages.find((m: any) => m.result) ?? hookRes.body;
+      const hookContent = JSON.parse((hookResponse?.result?.contents ?? [])[0]?.text ?? '{}');
+      expect(hookContent.type).toBe('hook');
+      expect(hookContent.name).toBe('test-hook');
 
-    const workflowRes = await request(resourceApp)
-      .post('/mcp')
-      .set('Accept', STREAM_ACCEPT)
-      .send({ jsonrpc: '2.0', method: 'resources/read', params: { uri: 'awesome://workflows/test-workflow' }, id: 'workflow-read' })
-      .expect(200);
-    const workflowMessages = collectSseData(workflowRes.text);
-    const workflowResponse = workflowMessages.find((m: any) => m.result) ?? workflowRes.body;
-    const workflowContent = JSON.parse((workflowResponse?.result?.contents ?? [])[0]?.text ?? '{}');
-    expect(workflowContent.type).toBe('workflow');
-    expect(workflowContent.name).toBe('test-workflow');
+      const workflowRes = await request(resourceApp)
+        .post('/mcp')
+        .set('Accept', STREAM_ACCEPT)
+        .send({ jsonrpc: '2.0', method: 'resources/read', params: { uri: 'awesome://workflows/test-workflow' }, id: 'workflow-read' })
+        .expect(200);
+      const workflowMessages = collectSseData(workflowRes.text);
+      const workflowResponse = workflowMessages.find((m: any) => m.result) ?? workflowRes.body;
+      const workflowContent = JSON.parse((workflowResponse?.result?.contents ?? [])[0]?.text ?? '{}');
+      expect(workflowContent.type).toBe('workflow');
+      expect(workflowContent.name).toBe('test-workflow');
+    } finally {
+      await resourceServer.stop();
+    }
   });
 });

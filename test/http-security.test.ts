@@ -21,14 +21,18 @@ describe('HttpServer Security', () => {
             });
             const app = server.getApp();
 
-            // Use POST to avoid SSE hanging
-            await request(app)
-                .post('/mcp')
-                .set('Origin', 'http://trusted.com')
-                .set('Accept', STREAM_ACCEPT)
-                .set('Content-Type', 'application/json')
-                .send({ jsonrpc: '2.0', method: 'ping', id: 1 })
-                .expect(200);
+            try {
+                // Use POST to avoid SSE hanging
+                await request(app)
+                    .post('/mcp')
+                    .set('Origin', 'http://trusted.com')
+                    .set('Accept', STREAM_ACCEPT)
+                    .set('Content-Type', 'application/json')
+                    .send({ jsonrpc: '2.0', method: 'ping', id: 1 })
+                    .expect(200);
+            } finally {
+                await server.stop();
+            }
         });
 
         it('should block request with invalid origin', async () => {
@@ -37,15 +41,19 @@ describe('HttpServer Security', () => {
             });
             const app = server.getApp();
 
-            const res = await request(app)
-                .post('/mcp')
-                .set('Origin', 'http://evil.com')
-                .set('Accept', STREAM_ACCEPT)
-                .set('Content-Type', 'application/json')
-                .send({ jsonrpc: '2.0', method: 'ping', id: 1 })
-                .expect(403);
+            try {
+                const res = await request(app)
+                    .post('/mcp')
+                    .set('Origin', 'http://evil.com')
+                    .set('Accept', STREAM_ACCEPT)
+                    .set('Content-Type', 'application/json')
+                    .send({ jsonrpc: '2.0', method: 'ping', id: 1 })
+                    .expect(403);
 
-            expect(res.body.error).toMatch(/Origin not allowed/);
+                expect(res.body.error).toMatch(/Origin not allowed/);
+            } finally {
+                await server.stop();
+            }
         });
 
         it('should block request with missing origin', async () => {
@@ -54,14 +62,18 @@ describe('HttpServer Security', () => {
             });
             const app = server.getApp();
 
-            const res = await request(app)
-                .post('/mcp')
-                .set('Accept', STREAM_ACCEPT)
-                .set('Content-Type', 'application/json')
-                .send({ jsonrpc: '2.0', method: 'ping', id: 1 })
-                .expect(403);
+            try {
+                const res = await request(app)
+                    .post('/mcp')
+                    .set('Accept', STREAM_ACCEPT)
+                    .set('Content-Type', 'application/json')
+                    .send({ jsonrpc: '2.0', method: 'ping', id: 1 })
+                    .expect(403);
 
-            expect(res.body.error).toMatch(/Missing Origin header/);
+                expect(res.body.error).toMatch(/Missing Origin header/);
+            } finally {
+                await server.stop();
+            }
         });
     });
 
@@ -72,13 +84,17 @@ describe('HttpServer Security', () => {
             });
             const app = server.getApp();
 
-            await request(app)
-                .post('/mcp')
-                .set('Authorization', 'Bearer secret')
-                .set('Accept', STREAM_ACCEPT)
-                .set('Content-Type', 'application/json')
-                .send({ jsonrpc: '2.0', method: 'ping', id: 1 })
-                .expect(200);
+            try {
+                await request(app)
+                    .post('/mcp')
+                    .set('Authorization', 'Bearer secret')
+                    .set('Accept', STREAM_ACCEPT)
+                    .set('Content-Type', 'application/json')
+                    .send({ jsonrpc: '2.0', method: 'ping', id: 1 })
+                    .expect(200);
+            } finally {
+                await server.stop();
+            }
         });
 
         it('should allow request with valid API Key header', async () => {
@@ -87,13 +103,17 @@ describe('HttpServer Security', () => {
             });
             const app = server.getApp();
 
-            await request(app)
-                .post('/mcp')
-                .set('x-api-key', 'secret')
-                .set('Accept', STREAM_ACCEPT)
-                .set('Content-Type', 'application/json')
-                .send({ jsonrpc: '2.0', method: 'ping', id: 1 })
-                .expect(200);
+            try {
+                await request(app)
+                    .post('/mcp')
+                    .set('x-api-key', 'secret')
+                    .set('Accept', STREAM_ACCEPT)
+                    .set('Content-Type', 'application/json')
+                    .send({ jsonrpc: '2.0', method: 'ping', id: 1 })
+                    .expect(200);
+            } finally {
+                await server.stop();
+            }
         });
 
         it('should block request with invalid token', async () => {
@@ -102,11 +122,15 @@ describe('HttpServer Security', () => {
             });
             const app = server.getApp();
 
-            await request(app)
-                .post('/mcp')
-                .set('Authorization', 'Bearer wrong')
-                .set('Accept', STREAM_ACCEPT)
-                .expect(401);
+            try {
+                await request(app)
+                    .post('/mcp')
+                    .set('Authorization', 'Bearer wrong')
+                    .set('Accept', STREAM_ACCEPT)
+                    .expect(401);
+            } finally {
+                await server.stop();
+            }
         });
 
         it('should block request with missing token', async () => {
@@ -115,10 +139,14 @@ describe('HttpServer Security', () => {
             });
             const app = server.getApp();
 
-            await request(app)
-                .post('/mcp')
-                .set('Accept', STREAM_ACCEPT)
-                .expect(401);
+            try {
+                await request(app)
+                    .post('/mcp')
+                    .set('Accept', STREAM_ACCEPT)
+                    .expect(401);
+            } finally {
+                await server.stop();
+            }
         });
     });
 
@@ -129,21 +157,25 @@ describe('HttpServer Security', () => {
             });
             const app = server.getApp();
 
-            // Request 1: OK
-            await request(app).post('/mcp')
-                .set('Accept', STREAM_ACCEPT)
-                .set('Content-Type', 'application/json')
-                .send({ jsonrpc: '2.0', method: 'ping', id: 1 }).expect(200);
-            // Request 2: OK
-            await request(app).post('/mcp')
-                .set('Accept', STREAM_ACCEPT)
-                .set('Content-Type', 'application/json')
-                .send({ jsonrpc: '2.0', method: 'ping', id: 2 }).expect(200);
-            // Request 3: Blocked
-            await request(app).post('/mcp')
-                .set('Accept', STREAM_ACCEPT)
-                .set('Content-Type', 'application/json')
-                .send({ jsonrpc: '2.0', method: 'ping', id: 3 }).expect(429);
+            try {
+                // Request 1: OK
+                await request(app).post('/mcp')
+                    .set('Accept', STREAM_ACCEPT)
+                    .set('Content-Type', 'application/json')
+                    .send({ jsonrpc: '2.0', method: 'ping', id: 1 }).expect(200);
+                // Request 2: OK
+                await request(app).post('/mcp')
+                    .set('Accept', STREAM_ACCEPT)
+                    .set('Content-Type', 'application/json')
+                    .send({ jsonrpc: '2.0', method: 'ping', id: 2 }).expect(200);
+                // Request 3: Blocked
+                await request(app).post('/mcp')
+                    .set('Accept', STREAM_ACCEPT)
+                    .set('Content-Type', 'application/json')
+                    .send({ jsonrpc: '2.0', method: 'ping', id: 3 }).expect(429);
+            } finally {
+                await server.stop();
+            }
         });
     });
 });

@@ -96,8 +96,15 @@ export class HttpServer {
       onCallEnd: (requestId) => {
         if (!requestId) return;
         this.activeRequests.delete(requestId);
-        // Ensure any lingering SSE streams for this request are closed
-        this.transport.closeSSEStream(requestId);
+        // Ensure any lingering SSE streams for this request are closed.
+        // We wrap this in try-catch because in stateless mode or direct POSTs
+        // the stream might already be closed or not exist.
+        try {
+          this.transport.closeSSEStream(requestId);
+        } catch (err) {
+          // Ignore errors during stream closing as it may already be closed
+          logger.debug(`Note: SSE stream for ${requestId} could not be closed explicitly: ${err}`);
+        }
       }
     });
 
@@ -202,9 +209,14 @@ export class HttpServer {
         // to the transport if available.
         await this.transport.handleRequest(req as any, res as any, req.body);
       } catch (error) {
-        logger.error(`HTTP MCP request failed: ${error}`);
+        const errorMsg = error instanceof Error ? error.message : String(error);
+        const errorStack = error instanceof Error ? error.stack : 'No stack trace';
+        logger.error(`HTTP MCP request failed: ${errorMsg}\nStack: ${errorStack}`);
         if (!res.headersSent) {
-          res.status(500).json({ error: 'Failed to handle MCP request' });
+          res.status(500).json({ 
+            error: 'Failed to handle MCP request',
+            details: errorMsg
+          });
         }
       }
     };
@@ -301,8 +313,14 @@ export class HttpServer {
   private async ensureConnected() {
     if (this.connected) return;
     if (!this.connectPromise) {
+      logger.info('Connecting MCP server to transport...');
       this.connectPromise = this.mcpServer.connect(this.transport).then(() => {
         this.connected = true;
+        logger.info('MCP server connected to transport');
+      }).catch(err => {
+        logger.error(`Failed to connect MCP server to transport: ${err}`);
+        this.connectPromise = undefined; // Allow retry
+        throw err;
       });
     }
     return this.connectPromise;

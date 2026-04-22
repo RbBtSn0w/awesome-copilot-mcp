@@ -121,7 +121,16 @@ export function registerMcpHandlers(server: Server, tools: MCPTools, prompts: MC
       };
     } catch (error) {
       logger.error(`Failed to read resource ${uri}: ${error}`);
-      throw error;
+      return {
+        contents: [
+          {
+            uri,
+            mimeType: 'text/plain',
+            text: `Error: ${error instanceof Error ? error.message : String(error)}`
+          }
+        ],
+        isError: true
+      } as any;
     }
   });
 }
