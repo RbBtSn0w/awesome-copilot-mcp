@@ -184,6 +184,7 @@ describe('MCP HTTP /mcp', () => {
         .post('/mcp')
         .set('Accept', STREAM_ACCEPT)
         .send({ jsonrpc: '2.0', method: 'resources/read', params: { uri: 'awesome://plugins/test-plugin' }, id: 'plugin-read' })
+        .expect((res) => { if (res.status !== 200) console.error('PLUGIN READ ERROR:', res.status, res.body, res.text); })
         .expect(200);
       const pluginMessages = collectSseData(pluginRes.text);
       const pluginResponse = pluginMessages.find((m: any) => m.result) ?? pluginRes.body;
@@ -195,6 +196,7 @@ describe('MCP HTTP /mcp', () => {
         .post('/mcp')
         .set('Accept', STREAM_ACCEPT)
         .send({ jsonrpc: '2.0', method: 'resources/read', params: { uri: 'awesome://hooks/test-hook' }, id: 'hook-read' })
+        .expect((res) => { if (res.status !== 200) console.error('HOOK READ ERROR:', res.status, res.body, res.text); })
         .expect(200);
       const hookMessages = collectSseData(hookRes.text);
       const hookResponse = hookMessages.find((m: any) => m.result) ?? hookRes.body;
@@ -206,6 +208,7 @@ describe('MCP HTTP /mcp', () => {
         .post('/mcp')
         .set('Accept', STREAM_ACCEPT)
         .send({ jsonrpc: '2.0', method: 'resources/read', params: { uri: 'awesome://workflows/test-workflow' }, id: 'workflow-read' })
+        .expect((res) => { if (res.status !== 200) console.error('WORKFLOW READ ERROR:', res.status, res.body, res.text); })
         .expect(200);
       const workflowMessages = collectSseData(workflowRes.text);
       const workflowResponse = workflowMessages.find((m: any) => m.result) ?? workflowRes.body;

@@ -162,12 +162,16 @@ describe('HttpServer Security', () => {
                 await request(app).post('/mcp')
                     .set('Accept', STREAM_ACCEPT)
                     .set('Content-Type', 'application/json')
-                    .send({ jsonrpc: '2.0', method: 'ping', id: 1 }).expect(200);
+                    .send({ jsonrpc: '2.0', method: 'ping', id: 1 })
+                    .expect((res) => { if (res.status === 500) console.error('PING 1 ERROR:', res.status, res.body, res.text); })
+                    .expect(200);
                 // Request 2: OK
                 await request(app).post('/mcp')
                     .set('Accept', STREAM_ACCEPT)
                     .set('Content-Type', 'application/json')
-                    .send({ jsonrpc: '2.0', method: 'ping', id: 2 }).expect(200);
+                    .send({ jsonrpc: '2.0', method: 'ping', id: 2 })
+                    .expect((res) => { if (res.status === 500) console.error('PING 2 ERROR:', res.status, res.body, res.text); })
+                    .expect(200);
                 // Request 3: Blocked
                 await request(app).post('/mcp')
                     .set('Accept', STREAM_ACCEPT)
