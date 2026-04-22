@@ -184,6 +184,7 @@ describe('MCP HTTP /mcp', () => {
     try {
       const pluginRes = await request(resourceApp)
         .post('/mcp')
+        .set('Connection', 'close')
         .set('Accept', STREAM_ACCEPT)
         .send({ jsonrpc: '2.0', method: 'resources/read', params: { uri: 'awesome://plugins/test-plugin' }, id: 'plugin-read' })
         .expect((res) => { if (res.status !== 200) console.error('PLUGIN READ ERROR:', res.status, res.body, res.text); })
@@ -198,6 +199,7 @@ describe('MCP HTTP /mcp', () => {
 
       const hookRes = await request(resourceApp)
         .post('/mcp')
+        .set('Connection', 'close')
         .set('Accept', STREAM_ACCEPT)
         .send({ jsonrpc: '2.0', method: 'resources/read', params: { uri: 'awesome://hooks/test-hook' }, id: 'hook-read' })
         .expect((res) => { if (res.status !== 200) console.error('HOOK READ ERROR:', res.status, res.body, res.text); })
@@ -212,6 +214,7 @@ describe('MCP HTTP /mcp', () => {
 
       const workflowRes = await request(resourceApp)
         .post('/mcp')
+        .set('Connection', 'close')
         .set('Accept', STREAM_ACCEPT)
         .send({ jsonrpc: '2.0', method: 'resources/read', params: { uri: 'awesome://workflows/test-workflow' }, id: 'workflow-read' })
         .expect((res) => { if (res.status !== 200) console.error('WORKFLOW READ ERROR:', res.status, res.body, res.text); })
