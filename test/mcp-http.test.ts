@@ -23,7 +23,8 @@ describe('MCP HTTP /mcp', () => {
   });
 
   it('rejects invalid JSON-RPC requests', async () => {
-    const res = await request(app).post('/mcp').set('Accept', STREAM_ACCEPT).send({}).expect(400);
+    const res = await request(app).post('/mcp').set('Connection', 'close')
+      .set('Accept', STREAM_ACCEPT).send({}).expect(400);
     expect(res.body).toHaveProperty('error');
     const err = res.body.error;
     if (typeof err === 'string') {
@@ -36,6 +37,7 @@ describe('MCP HTTP /mcp', () => {
   it('get_prompt returns prompt metadata', async () => {
     const res = await request(app)
       .post('/mcp')
+      .set('Connection', 'close')
       .set('Accept', STREAM_ACCEPT)
       .send({ jsonrpc: '2.0', method: 'prompts/get', params: { name: 'get_search_prompt', arguments: { keyword: 'test' } }, id: 'r1' })
       .expect(200);
@@ -51,6 +53,7 @@ describe('MCP HTTP /mcp', () => {
 
     const res = await request(app)
       .post('/mcp')
+      .set('Connection', 'close')
       .set('Accept', STREAM_ACCEPT)
       .send({ jsonrpc: '2.0', method: 'tools/call', params: { name: 'search_agents', arguments: { query: 'c#' } }, id: 'r2' })
       .expect(200);
@@ -66,6 +69,7 @@ describe('MCP HTTP /mcp', () => {
 
     const res = await request(app)
       .post('/mcp')
+      .set('Connection', 'close')
       .set('Accept', STREAM_ACCEPT)
       .send({ jsonrpc: '2.0', method: 'tools/call', params: { name: 'search_agents', arguments: { query: 'c#' } }, id: 'r-invalid' })
       .expect(200);
@@ -88,6 +92,7 @@ describe('MCP HTTP /mcp', () => {
 
     const res = await request(app)
       .post('/mcp')
+      .set('Connection', 'close')
       .set('Accept', STREAM_ACCEPT)
       .send({ jsonrpc: '2.0', method: 'tools/call', params: { name: 'search_agents', arguments: { query: 'c#' }, stream: true }, id: 'r3' })
       .expect(200);
@@ -100,6 +105,7 @@ describe('MCP HTTP /mcp', () => {
     vi.spyOn(MCPTools.prototype, 'handleTool').mockResolvedValue(456 as any);
     const res2 = await request(app)
       .post('/mcp')
+      .set('Connection', 'close')
       .set('Accept', STREAM_ACCEPT)
       .send({ jsonrpc: '2.0', method: 'tools/call', params: { name: 'search_agents', arguments: { query: 'bad' }, stream: true }, id: 'r4' })
       .expect((res) => { if (res.status !== 200) console.error('RES2 ERROR:', res.status, res.body, res.text); })
@@ -123,6 +129,7 @@ describe('MCP HTTP /mcp', () => {
     // start request and kick off but don't await completion
     request(app)
       .post('/mcp')
+      .set('Connection', 'close')
       .set('Accept', STREAM_ACCEPT)
       .send({ jsonrpc: '2.0', method: 'tools/call', params: { name: 'search_agents', arguments: { query: 'x' } }, id: 'cancel-test' })
       .end(() => { });
@@ -158,7 +165,8 @@ describe('MCP HTTP /mcp', () => {
     try {
       const res = await request(app)
         .post('/mcp')
-        .set('Accept', STREAM_ACCEPT)
+        .set('Connection', 'close')
+      .set('Accept', STREAM_ACCEPT)
         .send({ jsonrpc: '2.0', method: 'tools/call', params: { name: 'search', arguments: { query: 'plugin', type: 'plugin' } }, id: 'plugin-search' })
         .expect(200);
 
@@ -186,7 +194,7 @@ describe('MCP HTTP /mcp', () => {
       const pluginRes = await request(resourceApp)
         .post('/mcp')
         .set('Connection', 'close')
-        .set('Accept', STREAM_ACCEPT)
+      .set('Accept', STREAM_ACCEPT)
         .send({ jsonrpc: '2.0', method: 'resources/read', params: { uri: 'awesome://plugins/test-plugin' }, id: 'plugin-read' })
         .expect((res) => { if (res.status !== 200) console.error('PLUGIN READ ERROR:', res.status, res.body, res.text); })
         .expect(200);
@@ -201,7 +209,7 @@ describe('MCP HTTP /mcp', () => {
       const hookRes = await request(resourceApp)
         .post('/mcp')
         .set('Connection', 'close')
-        .set('Accept', STREAM_ACCEPT)
+      .set('Accept', STREAM_ACCEPT)
         .send({ jsonrpc: '2.0', method: 'resources/read', params: { uri: 'awesome://hooks/test-hook' }, id: 'hook-read' })
         .expect((res) => { if (res.status !== 200) console.error('HOOK READ ERROR:', res.status, res.body, res.text); })
         .expect(200);
@@ -216,7 +224,7 @@ describe('MCP HTTP /mcp', () => {
       const workflowRes = await request(resourceApp)
         .post('/mcp')
         .set('Connection', 'close')
-        .set('Accept', STREAM_ACCEPT)
+      .set('Accept', STREAM_ACCEPT)
         .send({ jsonrpc: '2.0', method: 'resources/read', params: { uri: 'awesome://workflows/test-workflow' }, id: 'workflow-read' })
         .expect((res) => { if (res.status !== 200) console.error('WORKFLOW READ ERROR:', res.status, res.body, res.text); })
         .expect(200);

@@ -26,6 +26,7 @@ describe('HttpServer Security', () => {
                 // Use POST to avoid SSE hanging
                 await request(app)
                     .post('/mcp')
+                    .set('Connection', 'close')
                     .set('Origin', 'http://trusted.com')
                     .set('Accept', STREAM_ACCEPT)
                     .set('Content-Type', 'application/json')
@@ -45,6 +46,7 @@ describe('HttpServer Security', () => {
             try {
                 const res = await request(app)
                     .post('/mcp')
+                    .set('Connection', 'close')
                     .set('Origin', 'http://evil.com')
                     .set('Accept', STREAM_ACCEPT)
                     .set('Content-Type', 'application/json')
@@ -66,6 +68,7 @@ describe('HttpServer Security', () => {
             try {
                 const res = await request(app)
                     .post('/mcp')
+                    .set('Connection', 'close')
                     .set('Accept', STREAM_ACCEPT)
                     .set('Content-Type', 'application/json')
                     .send({ jsonrpc: '2.0', method: 'ping', id: 1 })
@@ -88,6 +91,7 @@ describe('HttpServer Security', () => {
             try {
                 await request(app)
                     .post('/mcp')
+                    .set('Connection', 'close')
                     .set('Authorization', 'Bearer secret')
                     .set('Accept', STREAM_ACCEPT)
                     .set('Content-Type', 'application/json')
@@ -107,6 +111,7 @@ describe('HttpServer Security', () => {
             try {
                 await request(app)
                     .post('/mcp')
+                    .set('Connection', 'close')
                     .set('x-api-key', 'secret')
                     .set('Accept', STREAM_ACCEPT)
                     .set('Content-Type', 'application/json')
@@ -126,6 +131,7 @@ describe('HttpServer Security', () => {
             try {
                 await request(app)
                     .post('/mcp')
+                    .set('Connection', 'close')
                     .set('Authorization', 'Bearer wrong')
                     .set('Accept', STREAM_ACCEPT)
                     .expect(401);
@@ -143,6 +149,7 @@ describe('HttpServer Security', () => {
             try {
                 await request(app)
                     .post('/mcp')
+                    .set('Connection', 'close')
                     .set('Accept', STREAM_ACCEPT)
                     .expect(401);
             } finally {
