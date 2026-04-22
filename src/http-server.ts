@@ -1,7 +1,6 @@
-import type { Express, Request, Response, NextFunction } from 'express';
+import express, { type Express, type Request, type Response, type NextFunction } from 'express';
 import http from 'http';
 import https from 'https';
-import { createMcpExpressApp } from '@modelcontextprotocol/sdk/server/express.js';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { IndexData } from './types';
@@ -62,14 +61,34 @@ export class HttpServer {
       tls: options.tls,
     };
 
-    // Use createMcpExpressApp directly as the main application
-    this.app = createMcpExpressApp({
-      host: this.options.host ?? '127.0.0.1',
-      allowedHosts: this.options.allowedHosts
+    this.app = express();
+
+    // Replicate createMcpExpressApp host validation, but OMIT express.json()
+    // The express.json() middleware disturbs the body stream, which causes @hono/node-server
+    // to throw an error when converting the Node stream to a Web Stream.
+    // By omitting express.json(), @hono/node-server will cleanly read the body via req.json().
+    const host = this.options.host ?? '127.0.0.1';
+    const allowedHosts = this.options.allowedHosts;
+    
+    // We will implement a basic host validation matching the SDK's logic
+    this.app.use((req, res, next) => {
+      const reqHost = req.headers.host?.split(':')[0];
+      if (allowedHosts) {
+        if (reqHost && !allowedHosts.includes(reqHost)) {
+          return res.status(403).json({ error: 'Host not allowed' });
+        }
+      } else {
+        const localhostHosts = ['127.0.0.1', 'localhost', '::1'];
+        if (localhostHosts.includes(host)) {
+          if (reqHost && !localhostHosts.includes(reqHost)) {
+            return res.status(403).json({ error: 'DNS rebinding protection: Host not allowed' });
+          }
+        }
+      }
+      next();
     });
 
     // Apply security/custom middlewares
-    // Note: createMcpExpressApp already includes express.json() and host validation.
     this.configureSecurity();
 
     // Initialize MCP helpers
@@ -132,11 +151,8 @@ export class HttpServer {
 
 
   private configureSecurity() {
-    // Note: createMcpExpressApp handles:
-    // 1. Host header validation 
-    // 2. Global JSON parsing (via express.json)
-
-    // We explicitly avoid adding urlencoded parser to encourage strict JSON-RPC usage.
+    // We explicitly avoid adding urlencoded or json parser to encourage strict JSON-RPC usage
+    // and prevent stream disturbance bugs.
 
     // Optional origin validation for CORS-like checks on GET requests if explicit config is present
 
@@ -236,8 +252,8 @@ export class HttpServer {
     app.post('/messages', handleMcpRequest);
 
     // Cancel endpoint to abort ongoing requests
-    // Body is already JSON-parsed by global middleware
-    app.post('/mcp/cancel', (req: Request, res: Response) => {
+    // Body is explicitly parsed by express.json() for this route only
+    app.post('/mcp/cancel', express.json(), (req: Request, res: Response) => {
       const { id } = req.body || {};
       if (!id) return res.status(400).json({ error: 'Missing id' });
       const active = this.activeRequests.get(id);
