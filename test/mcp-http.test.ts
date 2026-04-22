@@ -1,9 +1,11 @@
-import { vi, describe, it, expect, beforeEach } from 'vitest';
+import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
 import request from 'supertest';
 import { HttpServer } from '../src/http-server';
 import { MCPTools } from '../src/mcp-tools';
 import { collectSseData } from './utils/sse';
 import { createMockAdapter } from './helpers/mock-adapter';
+
+const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
 
 const STREAM_ACCEPT = 'text/event-stream, application/json';
 
@@ -192,6 +194,8 @@ describe('MCP HTTP /mcp', () => {
       expect(pluginContent.type).toBe('plugin');
       expect(pluginContent.name).toBe('test-plugin');
 
+      await sleep(50); // Prevent socket reuse/timing issues in CI
+
       const hookRes = await request(resourceApp)
         .post('/mcp')
         .set('Accept', STREAM_ACCEPT)
@@ -203,6 +207,8 @@ describe('MCP HTTP /mcp', () => {
       const hookContent = JSON.parse((hookResponse?.result?.contents ?? [])[0]?.text ?? '{}');
       expect(hookContent.type).toBe('hook');
       expect(hookContent.name).toBe('test-hook');
+
+      await sleep(50); // Prevent socket reuse/timing issues in CI
 
       const workflowRes = await request(resourceApp)
         .post('/mcp')

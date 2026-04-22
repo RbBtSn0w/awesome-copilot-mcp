@@ -3,6 +3,7 @@ import { describe, it, expect, vi, afterEach } from 'vitest';
 import { HttpServer } from '../src/http-server';
 
 const STREAM_ACCEPT = 'text/event-stream, application/json';
+const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
 
 describe('HttpServer Security', () => {
     const mockAdapter: any = {
@@ -165,6 +166,9 @@ describe('HttpServer Security', () => {
                     .send({ jsonrpc: '2.0', method: 'ping', id: 1 })
                     .expect((res) => { if (res.status === 500) console.error('PING 1 ERROR:', res.status, res.body, res.text); })
                     .expect(200);
+                
+                await sleep(50);
+
                 // Request 2: OK
                 await request(app).post('/mcp')
                     .set('Accept', STREAM_ACCEPT)
@@ -172,6 +176,9 @@ describe('HttpServer Security', () => {
                     .send({ jsonrpc: '2.0', method: 'ping', id: 2 })
                     .expect((res) => { if (res.status === 500) console.error('PING 2 ERROR:', res.status, res.body, res.text); })
                     .expect(200);
+                
+                await sleep(50);
+
                 // Request 3: Blocked
                 await request(app).post('/mcp')
                     .set('Accept', STREAM_ACCEPT)
