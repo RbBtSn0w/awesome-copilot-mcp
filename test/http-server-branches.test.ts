@@ -1,5 +1,8 @@
 import request from 'supertest';
+import { Server as MCPServer } from '@modelcontextprotocol/sdk/server/index.js';
+import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import { HttpServer } from '../src/http-server';
+import { logger } from '../src/logger';
 import { collectSseData } from './utils/sse';
 
 const STREAM_ACCEPT = 'text/event-stream, application/json';
@@ -64,5 +67,45 @@ describe('HttpServer edge/error/branch coverage', () => {
     const res = await request(app).post('/mcp/cancel').send({ id: 'notfound' });
     expect(res.status).toBe(404);
     expect(res.body.error).toMatch(/Request not found/);
+  });
+
+  it('POST /mcp logs cleanup rejections instead of dropping them', async () => {
+    const closeSpy = vi.spyOn(MCPServer.prototype, 'close').mockRejectedValueOnce(new Error('cleanup failed'));
+    const logSpy = vi.spyOn(logger, 'error').mockImplementation(() => logger);
+
+    try {
+      const res = await request(app)
+        .post('/mcp')
+        .set('Accept', STREAM_ACCEPT)
+        .send({ jsonrpc: '2.0', method: 'ping', id: 1 });
+
+      expect(res.status).toBe(200);
+
+      await new Promise((resolve) => setTimeout(resolve, 0));
+
+      expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('HTTP MCP cleanup failed: Error: cleanup failed'));
+    } finally {
+      closeSpy.mockRestore();
+      logSpy.mockRestore();
+    }
+  });
+
+  it('POST /mcp closes the per-request transport during cleanup', async () => {
+    const transportCloseSpy = vi.spyOn(StreamableHTTPServerTransport.prototype, 'close').mockResolvedValueOnce();
+
+    try {
+      const res = await request(app)
+        .post('/mcp')
+        .set('Accept', STREAM_ACCEPT)
+        .send({ jsonrpc: '2.0', method: 'ping', id: 1 });
+
+      expect(res.status).toBe(200);
+
+      await new Promise((resolve) => setTimeout(resolve, 0));
+
+      expect(transportCloseSpy).toHaveBeenCalledTimes(1);
+    } finally {
+      transportCloseSpy.mockRestore();
+    }
   });
 });

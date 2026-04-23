@@ -165,12 +165,14 @@ export class HttpServer {
     // Helper to handle MCP request via Transport
     const handleMcpRequest = async (req: Request, res: Response) => {
       const { server, transport, cleanup } = this.createRequestSession();
-      const finalize = () => {
-        void cleanup();
+      const cleanupSafely = () => {
+        void cleanup().catch((error) => {
+          logger.error(`HTTP MCP cleanup failed: ${error}`);
+        });
       };
 
-      res.once('close', finalize);
-      res.once('finish', finalize);
+      res.once('close', cleanupSafely);
+      res.once('finish', cleanupSafely);
 
       try {
         await server.connect(transport);
@@ -178,7 +180,7 @@ export class HttpServer {
         await transport.handleRequest(req as any, res as any, req.body);
       } catch (error) {
         logger.error(`HTTP MCP request failed: ${error}`);
-        void cleanup();
+        cleanupSafely();
         if (!res.headersSent) {
           res.status(500).json({ error: 'Failed to handle MCP request' });
         }
@@ -255,6 +257,8 @@ export class HttpServer {
   }
 
   async stop(): Promise<void> {
+    await Promise.all(Array.from(this.requestSessionClosers, (closeSession) => closeSession()));
+
     if (this.server) {
       await new Promise<void>((resolve, reject) => {
         this.server!.close((err) => {
@@ -264,7 +268,6 @@ export class HttpServer {
       });
       this.server = undefined;
     }
-    await Promise.all(Array.from(this.requestSessionClosers, (closeSession) => closeSession()));
   }
 
   private createRequestSession(): {
