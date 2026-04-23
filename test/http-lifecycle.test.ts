@@ -59,4 +59,23 @@ describe('HttpServer Lifecycle', () => {
         await server.stop();
         await server.stop(); // Should do nothing
     });
+
+    it('should stop request sessions before closing the HTTP server', async () => {
+        const server = new HttpServer(mockAdapter, { port: 0 });
+        const order: string[] = [];
+
+        (server as any).requestSessionClosers.add(async () => {
+            order.push('session');
+        });
+        (server as any).server = {
+            close: (cb: (err?: Error) => void) => {
+                order.push('server');
+                cb();
+            }
+        };
+
+        await server.stop();
+
+        expect(order).toEqual(['session', 'server']);
+    });
 });

@@ -42,12 +42,9 @@ export class HttpServer {
   private tools: MCPTools;
   private prompts: MCPPrompts;
   private resources: MCPResources;
-  private mcpServer: Server;
-  private transport: StreamableHTTPServerTransport;
   // Promote activeRequests to a class member so tests can validate cancel logic
-  private activeRequests = new Map<string, { controller: AbortController }>();
-  private connected = false;
-  private connectPromise?: Promise<void>;
+  private activeRequests = new Map<string, { controller: AbortController; transport?: StreamableHTTPServerTransport }>();
+  private requestSessionClosers = new Set<() => Promise<void>>();
 
   constructor(adapter: AdapterLike, options: HttpServerOptions = {}) {
     this.adapter = adapter;
@@ -76,35 +73,6 @@ export class HttpServer {
     this.tools = new MCPTools(this.adapter);
     this.prompts = new MCPPrompts();
     this.resources = new MCPResources(this.adapter as any);
-
-    // Shared MCP server + transport (stateless mode)
-    this.mcpServer = new Server({
-      name: 'awesome-copilot-mcp',
-      version: pkg.version,
-    }, {
-      capabilities: {
-        tools: {},
-        prompts: {},
-        resources: {},
-      },
-    });
-
-    registerMcpHandlers(this.mcpServer, this.tools, this.prompts, this.resources, {
-      onCallStart: (requestId, controller) => {
-        if (requestId) this.activeRequests.set(requestId, { controller });
-      },
-      onCallEnd: (requestId) => {
-        if (!requestId) return;
-        this.activeRequests.delete(requestId);
-        // Ensure any lingering SSE streams for this request are closed
-        this.transport.closeSSEStream(requestId);
-      }
-    });
-
-    this.transport = new StreamableHTTPServerTransport({
-      // Stateless mode to simplify client usage; callers must still send both JSON and SSE accept headers
-      sessionIdGenerator: undefined,
-    });
 
     // Register routes
     this.setupRoutes(this.app);
@@ -196,13 +164,23 @@ export class HttpServer {
   private setupRoutes(app: Express) {
     // Helper to handle MCP request via Transport
     const handleMcpRequest = async (req: Request, res: Response) => {
+      const { server, transport, cleanup } = this.createRequestSession();
+      const cleanupSafely = () => {
+        void cleanup().catch((error) => {
+          logger.error(`HTTP MCP cleanup failed: ${error}`);
+        });
+      };
+
+      res.once('close', cleanupSafely);
+      res.once('finish', cleanupSafely);
+
       try {
-        await this.ensureConnected();
-        // createMcpExpressApp includes body-parser, so we must pass the parsed body
-        // to the transport if available.
-        await this.transport.handleRequest(req as any, res as any, req.body);
+        await server.connect(transport);
+        // SDK 1.29+ requires a fresh stateless transport per request.
+        await transport.handleRequest(req as any, res as any, req.body);
       } catch (error) {
         logger.error(`HTTP MCP request failed: ${error}`);
+        cleanupSafely();
         if (!res.headersSent) {
           res.status(500).json({ error: 'Failed to handle MCP request' });
         }
@@ -231,7 +209,7 @@ export class HttpServer {
       const active = this.activeRequests.get(id);
       if (!active) return res.status(404).json({ error: 'Request not found or already completed' });
       active.controller.abort();
-      this.transport.closeSSEStream(id);
+      active.transport?.closeSSEStream(id);
       this.activeRequests.delete(id);
       return res.json({ id, status: 'cancelled' });
     });
@@ -245,7 +223,6 @@ export class HttpServer {
 
   async start(): Promise<void> {
     if (this.server) return;
-    await this.ensureConnected();
 
     return new Promise<void>((resolve, reject) => {
       try {
@@ -280,6 +257,8 @@ export class HttpServer {
   }
 
   async stop(): Promise<void> {
+    await Promise.all(Array.from(this.requestSessionClosers, (closeSession) => closeSession()));
+
     if (this.server) {
       await new Promise<void>((resolve, reject) => {
         this.server!.close((err) => {
@@ -289,22 +268,51 @@ export class HttpServer {
       });
       this.server = undefined;
     }
-
-    if (this.connected) {
-      await this.transport.close();
-      await this.mcpServer.close();
-      this.connected = false;
-      this.connectPromise = undefined;
-    }
   }
 
-  private async ensureConnected() {
-    if (this.connected) return;
-    if (!this.connectPromise) {
-      this.connectPromise = this.mcpServer.connect(this.transport).then(() => {
-        this.connected = true;
-      });
-    }
-    return this.connectPromise;
+  private createRequestSession(): {
+    server: Server;
+    transport: StreamableHTTPServerTransport;
+    cleanup: () => Promise<void>;
+  } {
+    const transport = new StreamableHTTPServerTransport({
+      // Stateless mode keeps client interaction simple, but the SDK now requires
+      // a fresh transport instance for each HTTP request.
+      sessionIdGenerator: undefined,
+    });
+
+    const server = new Server({
+      name: 'awesome-copilot-mcp',
+      version: pkg.version,
+    }, {
+      capabilities: {
+        tools: {},
+        prompts: {},
+        resources: {},
+      },
+    });
+
+    registerMcpHandlers(server, this.tools, this.prompts, this.resources, {
+      onCallStart: (requestId, controller) => {
+        if (requestId) this.activeRequests.set(requestId, { controller, transport });
+      },
+      onCallEnd: (requestId) => {
+        if (!requestId) return;
+        this.activeRequests.delete(requestId);
+        transport.closeSSEStream(requestId);
+      }
+    });
+
+    let cleanedUp = false;
+    const cleanup = async (): Promise<void> => {
+      if (cleanedUp) return;
+      cleanedUp = true;
+      this.requestSessionClosers.delete(cleanup);
+      await server.close();
+    };
+
+    this.requestSessionClosers.add(cleanup);
+
+    return { server, transport, cleanup };
   }
 }
