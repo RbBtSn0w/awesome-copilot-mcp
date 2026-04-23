@@ -1,3 +1,10 @@
+## [0.7.9](https://github.com/RbBtSn0w/awesome-copilot-mcp/compare/v0.7.8...v0.7.9) (2026-04-23)
+
+
+### Bug Fixes
+
+* harden request cleanup and shutdown order ([b8b8d0f](https://github.com/RbBtSn0w/awesome-copilot-mcp/commit/b8b8d0f8c4ec178886e6e142fd198570797b40d1))
+
 ## [0.7.8](https://github.com/RbBtSn0w/awesome-copilot-mcp/compare/v0.7.7...v0.7.8) (2026-04-21)
 
 
