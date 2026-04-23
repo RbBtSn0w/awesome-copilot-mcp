@@ -1,38 +1,166 @@
-name: Dependabot auto-merge
+name: Dependabot Automation
 
-on: pull_request
+on:
+  pull_request_target:
+    types: [opened, reopened, synchronize]
+  workflow_run:
+    workflows: ['CI']
+    types: [completed]
 
 permissions:
   contents: write
   pull-requests: write
 
 jobs:
-  dependabot:
+  classify-pr:
     runs-on: ubuntu-latest
-    if: github.event.pull_request.user.login == 'dependabot[bot]'
+    if: github.event_name == 'pull_request_target' && github.event.pull_request.user.login == 'dependabot[bot]'
     steps:
+      - uses: actions/checkout@v6
+
+      - name: Use Node.js 22.x
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22.x
+
       - name: Dependabot metadata
         id: metadata
         uses: dependabot/fetch-metadata@v2
         with:
           github-token: "${{ secrets.GITHUB_TOKEN }}"
 
-      - name: Auto-approve patch and minor updates
-        if: steps.metadata.outputs.update-type != 'version-update:semver-major'
+      - name: Ensure automation labels
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh label create "deps:risk:low" --color "0e8a16" --description "Low-risk dependency update that can auto-merge after CI" --force
+          gh label create "deps:risk:toolchain" --color "fbca04" --description "Developer tooling update that requires manual review" --force
+          gh label create "deps:risk:runtime" --color "d73a4a" --description "Runtime dependency update that requires manual review" --force
+          gh label create "deps:risk:actions" --color "5319e7" --description "GitHub Actions update that requires manual review" --force
+          gh label create "deps:merge:auto" --color "1d76db" --description "Dependency update is eligible for automated merge after CI succeeds" --force
+          gh label create "deps:merge:manual" --color "b60205" --description "Dependency update stays in the manual review queue" --force
+
+      - name: Classify dependency policy
+        id: classify
+        env:
+          PR_LABELS_JSON: ${{ toJson(github.event.pull_request.labels.*.name) }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          DEPENDENCY_NAMES: ${{ steps.metadata.outputs.dependency-names }}
+          DEPENDENCY_TYPE: ${{ steps.metadata.outputs.dependency-type }}
+          UPDATE_TYPE: ${{ steps.metadata.outputs.update-type }}
+        run: |
+          PR_LABELS="$(node -e "const labels = JSON.parse(process.env.PR_LABELS_JSON || '[]'); process.stdout.write(labels.join(','));")"
+          node scripts/dependency-automation.js classify \
+            --title "$PR_TITLE" \
+            --dependency-names "$DEPENDENCY_NAMES" \
+            --dependency-type "$DEPENDENCY_TYPE" \
+            --update-type "$UPDATE_TYPE" \
+            --labels "$PR_LABELS" > classification.json
+
+          cat classification.json
+
+          node -e "
+            const fs = require('fs');
+            const data = JSON.parse(fs.readFileSync('classification.json', 'utf8'));
+            const output = process.env.GITHUB_OUTPUT;
+            const entries = {
+              auto_merge: String(data.autoMerge),
+              merge_label: data.mergeLabel,
+              reason: data.reason,
+              risk_label: data.riskLabel,
+            };
+            for (const [key, value] of Object.entries(entries)) {
+              fs.appendFileSync(output, \`\${key}=\${String(value).replace(/\\n/g, ' ')}\\n\`);
+            }
+          "
+
+      - name: Sync automation labels
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+        run: |
+          for label in \
+            "deps:risk:low" \
+            "deps:risk:toolchain" \
+            "deps:risk:runtime" \
+            "deps:risk:actions" \
+            "deps:merge:auto" \
+            "deps:merge:manual"
+          do
+            gh pr edit "$PR_URL" --remove-label "$label" >/dev/null 2>&1 || true
+          done
+
+          gh pr edit "$PR_URL" \
+            --add-label "${{ steps.classify.outputs.risk_label }}" \
+            --add-label "${{ steps.classify.outputs.merge_label }}"
+
+      - name: Auto-approve low-risk updates
+        if: steps.classify.outputs.auto_merge == 'true'
         run: gh pr review --approve "$PR_URL"
         env:
           PR_URL: ${{ github.event.pull_request.html_url }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Enable auto-merge (squash)
-        if: steps.metadata.outputs.update-type != 'version-update:semver-major'
-        run: gh pr merge --auto --squash "$PR_URL"
-        env:
-          PR_URL: ${{ github.event.pull_request.html_url }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Alert on major update
-        if: steps.metadata.outputs.update-type == 'version-update:semver-major'
+      - name: Summarize classification
         run: |
-          echo "::warning::Major version update detected: ${{ steps.metadata.outputs.dependency-names }} (${{ steps.metadata.outputs.previous-version }} → ${{ steps.metadata.outputs.new-version }})"
-          echo "Manual review required for major updates."
+          echo "Risk label: ${{ steps.classify.outputs.risk_label }}"
+          echo "Merge label: ${{ steps.classify.outputs.merge_label }}"
+          echo "Reason: ${{ steps.classify.outputs.reason }}"
+
+  merge-after-ci:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success'
+    steps:
+      - name: Resolve Dependabot PR from CI run
+        id: pr
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          WORKFLOW_RUN_PULL_REQUESTS: ${{ toJson(github.event.workflow_run.pull_requests) }}
+        run: |
+          PR_NUMBER="$(node -e "const prs = JSON.parse(process.env.WORKFLOW_RUN_PULL_REQUESTS || '[]'); process.stdout.write(prs.length ? String(prs[0].number) : '');")"
+          if [ -z "$PR_NUMBER" ]; then
+            echo "should_merge=false" >> "$GITHUB_OUTPUT"
+            echo "reason=No pull request is attached to this CI run." >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          export PR_NUMBER
+          gh pr view "$PR_NUMBER" --json author,isDraft,labels,state,title,url > pr.json
+
+          node <<'NODE'
+          const fs = require('fs');
+          const pr = JSON.parse(fs.readFileSync('pr.json', 'utf8'));
+          const labels = (pr.labels || []).map((item) => item.name);
+          const shouldMerge =
+            pr.state === 'OPEN' &&
+            !pr.isDraft &&
+            pr.author?.login === 'dependabot[bot]' &&
+            labels.includes('deps:merge:auto');
+
+          const entries = {
+            pr_number: process.env.PR_NUMBER,
+            pr_url: pr.url || '',
+            should_merge: String(shouldMerge),
+            reason: shouldMerge
+              ? 'CI succeeded for an auto-merge eligible Dependabot PR.'
+              : 'CI succeeded, but this PR is not eligible for automated merge.',
+          };
+
+          for (const [key, value] of Object.entries(entries)) {
+            fs.appendFileSync(process.env.GITHUB_OUTPUT, `${key}=${String(value).replace(/\n/g, ' ')}\n`);
+          }
+          NODE
+
+      - name: Merge approved low-risk update
+        if: steps.pr.outputs.should_merge == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_URL: ${{ steps.pr.outputs.pr_url }}
+        run: |
+          gh pr review "$PR_URL" --approve >/dev/null 2>&1 || true
+          gh pr merge "$PR_URL" --squash --delete-branch
+
+      - name: Summarize merge decision
+        run: |
+          echo "Merge eligible: ${{ steps.pr.outputs.should_merge }}"
+          echo "Reason: ${{ steps.pr.outputs.reason }}"

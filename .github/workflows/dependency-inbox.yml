@@ -1,0 +1,49 @@
+name: Dependency Inbox
+
+on:
+  schedule:
+    - cron: '0 1 * * 1-5'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: read
+
+jobs:
+  summarize:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Use Node.js 22.x
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22.x
+
+      - name: Collect open Dependabot PRs
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr list \
+            --search "author:app/dependabot state:open" \
+            --state open \
+            --json number,title,url,labels,updatedAt > open-dependabot-prs.json
+
+      - name: Render inbox markdown
+        run: |
+          node scripts/dependency-automation.js render-inbox --input open-dependabot-prs.json > dependency-inbox.md
+          cat dependency-inbox.md
+
+      - name: Create or update inbox issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          ISSUE_NUMBER="$(gh issue list --search 'Dependency Inbox in:title state:open' --state open --json number --limit 1 | node -e "const issues = JSON.parse(require('fs').readFileSync(0, 'utf8')); process.stdout.write(issues.length ? String(issues[0].number) : '');")"
+
+          if [ -n "$ISSUE_NUMBER" ]; then
+            gh issue edit "$ISSUE_NUMBER" --title "Dependency Inbox" --body-file dependency-inbox.md
+          else
+            gh issue create --title "Dependency Inbox" --body-file dependency-inbox.md --label dependencies
+          fi

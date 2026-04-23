@@ -2,13 +2,20 @@ name: Release & Distribute
 
 on:
   workflow_dispatch:
-  push:
+  workflow_run:
+    workflows: ['CI']
+    types: [completed]
     branches:
       - main
+
+concurrency:
+  group: release-main
+  cancel-in-progress: false
 
 jobs:
   release:
     runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main')
     permissions:
       contents: write # Allow creating releases and tags
       issues: write   # Allow commenting on issues
@@ -25,13 +32,14 @@ jobs:
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0 # Full history needed for commit analysis
+          ref: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
           token: ${{ steps.app-token.outputs.token }}
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 22.x
           cache: 'npm'
@@ -39,8 +47,8 @@ jobs:
       - name: Install deps
         run: npm ci
 
-      - name: Verify Build & Metadata
-        run: npm run build
+      - name: Verify release candidate
+        run: npm run ci:release-verify
 
       - name: Run semantic-release
         id: semantic
