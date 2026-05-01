@@ -10,21 +10,27 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      pull-requests: write
+    env:
+      SYNC_BRANCH: automation/upstream-sync
+      PR_TITLE: "fix: sync upstream data"
 
     steps:
       - name: Generate GitHub App Token
         id: app-token
-        uses: actions/create-github-app-token@v1
+        uses: actions/create-github-app-token@v3
         with:
           app-id: ${{ secrets.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          permission-contents: write
+          permission-pull-requests: write
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           token: ${{ steps.app-token.outputs.token }}
 
       - name: Use Node.js 22.x
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 22.x
 
@@ -32,11 +38,36 @@ jobs:
         id: check
         run: node scripts/sync-upstream.js
 
-      - name: Push Changes
+      - name: Open Sync Pull Request
         if: steps.check.outputs.updated == 'true'
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          UPSTREAM_SHA: ${{ steps.check.outputs.sha }}
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git checkout -B "$SYNC_BRANCH"
           git add .upstream-sync
-          git commit -m "fix: sync upstream data"
-          git push
+          git commit -m "$PR_TITLE"
+          git push --force-with-lease origin "$SYNC_BRANCH"
+
+          cat > pr-body.md <<EOF
+          Automated update of the tracked upstream awesome-copilot commit.
+
+          - Upstream SHA: \`$UPSTREAM_SHA\`
+          - Source workflow: \`${{ github.workflow }} #${{ github.run_number }}\`
+          EOF
+
+          if gh pr view "$SYNC_BRANCH" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh pr edit "$SYNC_BRANCH" \
+              --repo "$GITHUB_REPOSITORY" \
+              --title "$PR_TITLE" \
+              --body-file pr-body.md
+          else
+            gh pr create \
+              --repo "$GITHUB_REPOSITORY" \
+              --base main \
+              --head "$SYNC_BRANCH" \
+              --title "$PR_TITLE" \
+              --body-file pr-body.md
+          fi

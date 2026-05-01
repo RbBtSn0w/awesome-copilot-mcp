@@ -111,11 +111,13 @@ jobs:
   merge-after-ci:
     runs-on: ubuntu-latest
     if: github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success'
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GH_REPO: ${{ github.repository }}
     steps:
       - name: Resolve Dependabot PR from CI run
         id: pr
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           WORKFLOW_RUN_PULL_REQUESTS: ${{ toJson(github.event.workflow_run.pull_requests) }}
         run: |
           PR_NUMBER="$(node -e "const prs = JSON.parse(process.env.WORKFLOW_RUN_PULL_REQUESTS || '[]'); process.stdout.write(prs.length ? String(prs[0].number) : '');")"
@@ -155,7 +157,6 @@ jobs:
       - name: Merge approved low-risk update
         if: steps.pr.outputs.should_merge == 'true'
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_URL: ${{ steps.pr.outputs.pr_url }}
         run: |
           gh pr review "$PR_URL" --approve >/dev/null 2>&1 || true
