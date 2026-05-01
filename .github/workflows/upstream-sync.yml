@@ -49,6 +49,7 @@ jobs:
           git checkout -B "$SYNC_BRANCH"
           git add .upstream-sync
           git commit -m "$PR_TITLE"
+          git fetch --no-tags origin "+refs/heads/$SYNC_BRANCH:refs/remotes/origin/$SYNC_BRANCH" || true
           git push --force-with-lease origin "$SYNC_BRANCH"
 
           cat > pr-body.md <<EOF

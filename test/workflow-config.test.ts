@@ -31,6 +31,7 @@ describe('workflow automation contracts', () => {
     expect(openPrStep.if).toBe("steps.check.outputs.updated == 'true'");
     expect(openPrStep.env.GH_TOKEN).toBe('${{ steps.app-token.outputs.token }}');
     expect(script).toContain('git checkout -B "$SYNC_BRANCH"');
+    expect(script).toContain('git fetch --no-tags origin "+refs/heads/$SYNC_BRANCH:refs/remotes/origin/$SYNC_BRANCH" || true');
     expect(script).toContain('git push --force-with-lease origin "$SYNC_BRANCH"');
     expect(script).toContain('gh pr create');
     expect(script).toContain('--body-file pr-body.md');
