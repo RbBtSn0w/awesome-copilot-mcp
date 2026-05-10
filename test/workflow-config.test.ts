@@ -34,7 +34,7 @@ describe('workflow automation contracts', () => {
     expect(workflow).toContain('merge-after-ci:');
     expect(workflow).toContain('GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}');
     expect(workflow).toContain('GH_REPO: ${{ github.repository }}');
-    expect(workflow).toContain('name: Resolve Dependabot PR from CI run');
+    expect(workflow).toContain('name: Resolve automation PR from CI run');
     expect(workflow).toContain('gh pr view "$PR_NUMBER"');
     expect(workflow).toContain("pr.author?.login === 'dependabot[bot]' || pr.author?.login === 'app/rbbtsn0w-bot'");
   });
