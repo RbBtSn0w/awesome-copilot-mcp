@@ -115,7 +115,7 @@ jobs:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       GH_REPO: ${{ github.repository }}
     steps:
-      - name: Resolve Dependabot PR from CI run
+      - name: Resolve automation PR from CI run
         id: pr
         env:
           WORKFLOW_RUN_PULL_REQUESTS: ${{ toJson(github.event.workflow_run.pull_requests) }}
@@ -137,7 +137,7 @@ jobs:
           const shouldMerge =
             pr.state === 'OPEN' &&
             !pr.isDraft &&
-            pr.author?.login === 'dependabot[bot]' &&
+            (pr.author?.login === 'dependabot[bot]' || pr.author?.login === 'rbbtsn0w-bot[bot]' || pr.author?.login === 'rbbtsn0w-bot') &&
             labels.includes('deps:merge:auto');
 
           const entries = {
@@ -145,7 +145,7 @@ jobs:
             pr_url: pr.url || '',
             should_merge: String(shouldMerge),
             reason: shouldMerge
-              ? 'CI succeeded for an auto-merge eligible Dependabot PR.'
+              ? 'CI succeeded for an auto-merge eligible automation PR.'
               : 'CI succeeded, but this PR is not eligible for automated merge.',
           };
 

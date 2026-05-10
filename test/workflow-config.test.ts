@@ -24,16 +24,21 @@ describe('workflow automation contracts', () => {
     expect(workflow).toContain('git push --force-with-lease origin "$SYNC_BRANCH"');
     expect(workflow).toContain('gh pr create');
     expect(workflow).toContain('--body-file pr-body.md');
+    expect(workflow).toContain('--label "deps:merge:auto"');
+    expect(workflow).toContain('--label "deps:risk:low"');
+    expect(workflow).toContain('--add-label "deps:merge:auto"');
+    expect(workflow).toContain('--add-label "deps:risk:low"');
     expect(workflow).not.toMatch(/^\s*git push\s*$/m);
   });
 
-  it('runs Dependabot merge checks with explicit GitHub repository context', () => {
+  it('runs automation merge checks for both Dependabot and Sync Bot', () => {
     const workflow = loadWorkflow('dependabot-auto-merge.yml');
 
     expect(workflow).toContain('merge-after-ci:');
     expect(workflow).toContain('GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}');
     expect(workflow).toContain('GH_REPO: ${{ github.repository }}');
-    expect(workflow).toContain('name: Resolve Dependabot PR from CI run');
+    expect(workflow).toContain('name: Resolve automation PR from CI run');
     expect(workflow).toContain('gh pr view "$PR_NUMBER"');
+    expect(workflow).toContain("pr.author?.login === 'dependabot[bot]' || pr.author?.login === 'rbbtsn0w-bot[bot]' || pr.author?.login === 'rbbtsn0w-bot'");
   });
 });
