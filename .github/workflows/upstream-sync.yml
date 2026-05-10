@@ -62,7 +62,8 @@ jobs:
               --repo "$GITHUB_REPOSITORY" \
               --title "$PR_TITLE" \
               --body-file pr-body.md \
-              --add-label "deps:merge:auto,deps:risk:low"
+              --add-label "deps:merge:auto" \
+              --add-label "deps:risk:low"
           else
             gh pr create \
               --repo "$GITHUB_REPOSITORY" \
@@ -70,5 +71,6 @@ jobs:
               --head "$SYNC_BRANCH" \
               --title "$PR_TITLE" \
               --body-file pr-body.md \
-              --label "deps:merge:auto,deps:risk:low"
+              --label "deps:merge:auto" \
+              --label "deps:risk:low"
           fi

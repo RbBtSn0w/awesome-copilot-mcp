@@ -24,7 +24,10 @@ describe('workflow automation contracts', () => {
     expect(workflow).toContain('git push --force-with-lease origin "$SYNC_BRANCH"');
     expect(workflow).toContain('gh pr create');
     expect(workflow).toContain('--body-file pr-body.md');
-    expect(workflow).toContain('--label "deps:merge:auto,deps:risk:low"');
+    expect(workflow).toContain('--label "deps:merge:auto"');
+    expect(workflow).toContain('--label "deps:risk:low"');
+    expect(workflow).toContain('--add-label "deps:merge:auto"');
+    expect(workflow).toContain('--add-label "deps:risk:low"');
     expect(workflow).not.toMatch(/^\s*git push\s*$/m);
   });
 
@@ -36,6 +39,6 @@ describe('workflow automation contracts', () => {
     expect(workflow).toContain('GH_REPO: ${{ github.repository }}');
     expect(workflow).toContain('name: Resolve automation PR from CI run');
     expect(workflow).toContain('gh pr view "$PR_NUMBER"');
-    expect(workflow).toContain("pr.author?.login === 'dependabot[bot]' || pr.author?.login === 'app/rbbtsn0w-bot'");
+    expect(workflow).toContain("pr.author?.login === 'dependabot[bot]' || pr.author?.login === 'rbbtsn0w-bot[bot]' || pr.author?.login === 'rbbtsn0w-bot'");
   });
 });

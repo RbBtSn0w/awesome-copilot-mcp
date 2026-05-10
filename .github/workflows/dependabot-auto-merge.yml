@@ -137,7 +137,7 @@ jobs:
           const shouldMerge =
             pr.state === 'OPEN' &&
             !pr.isDraft &&
-            (pr.author?.login === 'dependabot[bot]' || pr.author?.login === 'app/rbbtsn0w-bot') &&
+            (pr.author?.login === 'dependabot[bot]' || pr.author?.login === 'rbbtsn0w-bot[bot]' || pr.author?.login === 'rbbtsn0w-bot') &&
             labels.includes('deps:merge:auto');
 
           const entries = {
