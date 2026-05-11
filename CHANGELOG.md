@@ -1,3 +1,11 @@
+## [0.7.10](https://github.com/RbBtSn0w/awesome-copilot-mcp/compare/v0.7.9...v0.7.10) (2026-05-11)
+
+
+### Bug Fixes
+
+* **ci:** fix automated upstream sync auto-merge ([#68](https://github.com/RbBtSn0w/awesome-copilot-mcp/issues/68)) ([bc1511d](https://github.com/RbBtSn0w/awesome-copilot-mcp/commit/bc1511d3ed694fbc1d1effdd357884cda859abae))
+* sync upstream data ([#61](https://github.com/RbBtSn0w/awesome-copilot-mcp/issues/61)) ([8f711ff](https://github.com/RbBtSn0w/awesome-copilot-mcp/commit/8f711ff3b5c370178c1528f3a2ee57575852dcc4))
+
 ## [0.7.9](https://github.com/RbBtSn0w/awesome-copilot-mcp/compare/v0.7.8...v0.7.9) (2026-04-23)
 
 
