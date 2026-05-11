@@ -57,8 +57,10 @@ jobs:
           - Source workflow: \`${{ github.workflow }} #${{ github.run_number }}\`
           EOF
 
-          if gh pr view "$SYNC_BRANCH" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
-            gh pr edit "$SYNC_BRANCH" \
+          PR_NUMBER=$(gh pr list --head "$SYNC_BRANCH" --repo "$GITHUB_REPOSITORY" --state open --json number --jq '.[0].number')
+
+          if [ -n "$PR_NUMBER" ]; then
+            gh pr edit "$PR_NUMBER" \
               --repo "$GITHUB_REPOSITORY" \
               --title "$PR_TITLE" \
               --body-file pr-body.md \
