@@ -22,7 +22,7 @@ describe('workflow automation contracts', () => {
     expect(workflow).toContain('git checkout -B "$SYNC_BRANCH"');
     expect(workflow).toContain('git fetch --no-tags origin "+refs/heads/$SYNC_BRANCH:refs/remotes/origin/$SYNC_BRANCH" || true');
     expect(workflow).toContain('git push --force-with-lease origin "$SYNC_BRANCH"');
-    expect(workflow).toContain('PR_NUMBER=$(gh pr list --head "$SYNC_BRANCH" --repo "$GITHUB_REPOSITORY" --state open --json number --jq \'.[0].number\')');
+    expect(workflow).toContain('PR_NUMBER=$(gh pr list --head "$GITHUB_REPOSITORY_OWNER:$SYNC_BRANCH" --repo "$GITHUB_REPOSITORY" --state open --json number --jq \'.[0].number // empty\')');
     expect(workflow).toContain('if [ -n "$PR_NUMBER" ]; then');
     expect(workflow).toContain('gh pr edit "$PR_NUMBER"');
     expect(workflow).toContain('gh pr create');
