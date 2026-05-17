@@ -1,11 +1,13 @@
 import fs from 'fs';
 import path from 'path';
+import yaml from 'js-yaml';
 import { describe, expect, it } from 'vitest';
 
 const repoRoot = path.resolve(__dirname, '..');
+const workflowsRoot = path.join(repoRoot, '.github', 'workflows');
 
 function loadWorkflow(fileName: string): string {
-  return fs.readFileSync(path.join(repoRoot, '.github', 'workflows', fileName), 'utf8');
+  return fs.readFileSync(path.join(workflowsRoot, fileName), 'utf8');
 }
 
 function loadDependabotConfig(): string {
@@ -13,6 +15,20 @@ function loadDependabotConfig(): string {
 }
 
 describe('workflow automation contracts', () => {
+  it('keeps all GitHub Actions workflow YAML parseable in pull requests', () => {
+    const workflowFiles = fs
+      .readdirSync(workflowsRoot)
+      .filter((fileName) => fileName.endsWith('.yml'))
+      .sort();
+
+    expect(workflowFiles).toContain('ci.yml');
+    expect(workflowFiles).toContain('dependabot-auto-merge.yml');
+
+    for (const fileName of workflowFiles) {
+      expect(() => yaml.load(loadWorkflow(fileName))).not.toThrow();
+    }
+  });
+
   it('keeps CI validation focused and parallelized', () => {
     const workflow = loadWorkflow('ci.yml');
 
@@ -31,8 +47,12 @@ describe('workflow automation contracts', () => {
     const workflow = loadWorkflow('beta-release.yml');
 
     expect(workflow).toContain('name: Beta Release');
+    expect(workflow).toContain('pull_request:');
+    expect(workflow).toContain('verify-beta:');
+    expect(workflow).toContain('name: Verify Beta Release Candidate');
     expect(workflow).toContain('workflow_dispatch:');
-    expect(workflow).toContain('if: github.ref == \'refs/heads/main\'');
+    expect(workflow).toContain("if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'");
+    expect(workflow).toContain('needs: verify-beta');
     expect(workflow).toContain('npm run ci:release-verify');
     expect(workflow).toContain('npm publish --tag beta --provenance --access public');
   });
