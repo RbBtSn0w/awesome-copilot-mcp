@@ -36,6 +36,12 @@ jobs:
         id: check
         run: node scripts/sync-upstream.js
 
+      - name: Validate Sync Update
+        if: steps.check.outputs.updated == 'true'
+        run: |
+          npm ci
+          npm run ci:quality
+
       - name: Open Sync Pull Request
         if: steps.check.outputs.updated == 'true'
         env:
