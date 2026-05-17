@@ -1,3 +1,10 @@
+## [0.7.12](https://github.com/RbBtSn0w/awesome-copilot-mcp/compare/v0.7.11...v0.7.12) (2026-05-17)
+
+
+### Bug Fixes
+
+* harden upstream sync PR detection and automation ([#75](https://github.com/RbBtSn0w/awesome-copilot-mcp/issues/75)) ([d280621](https://github.com/RbBtSn0w/awesome-copilot-mcp/commit/d280621015a47e1e02162c74b4d817f01ff58809))
+
 ## [0.7.11](https://github.com/RbBtSn0w/awesome-copilot-mcp/compare/v0.7.10...v0.7.11) (2026-05-17)
 
 
