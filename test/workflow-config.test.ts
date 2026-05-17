@@ -23,6 +23,8 @@ describe('workflow automation contracts', () => {
     expect(workflow).toContain('git checkout -B "$SYNC_BRANCH"');
     expect(workflow).toContain('git fetch --no-tags origin "+refs/heads/$SYNC_BRANCH:refs/remotes/origin/$SYNC_BRANCH" || true');
     expect(workflow).toContain('git push --force-with-lease origin "$SYNC_BRANCH"');
+    // We use 'gh api' because 'gh pr list --head' does not support '<owner>:<branch>' syntax,
+    // which is needed for robust PR detection when syncing from specific branches or forks.
     expect(workflow).toContain('PR_NUMBER=$(gh api --method GET "/repos/$GITHUB_REPOSITORY/pulls" \\');
     expect(workflow).toContain('-f head="$GITHUB_REPOSITORY_OWNER:$SYNC_BRANCH" \\');
     expect(workflow).toContain('-f base="$DEFAULT_BRANCH" \\');

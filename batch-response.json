@@ -1,0 +1,66 @@
+{
+  "items": [
+    {
+      "item_id": "github-thread:PRRT_kwDORD6Aas6Cn-VY",
+      "classification": "fix",
+      "note": "Added explicit permissions block to auto-rebase.yml.",
+      "evidence": {
+        "commit": "b98f122573bf27483035255a3859f8db8dce468a",
+        "path": ".github/workflows/auto-rebase.yml"
+      }
+    },
+    {
+      "item_id": "github-thread:PRRT_kwDORD6Aas6Cn71D",
+      "classification": "fix",
+      "note": "Fixed typo 'worklow' -> 'workflow' and used 'default branch' phrasing.",
+      "evidence": {
+        "commit": "b98f122573bf27483035255a3859f8db8dce468a",
+        "path": "AUTOMATION_IMPROVEMENTS.md"
+      }
+    },
+    {
+      "item_id": "github-thread:PRRT_kwDORD6Aas6Cn73j",
+      "classification": "fix",
+      "note": "Fixed typo 'worklow' -> 'workflow' in AUTOMATION_IMPROVEMENTS.md.",
+      "evidence": {
+        "commit": "b98f122573bf27483035255a3859f8db8dce468a",
+        "path": "AUTOMATION_IMPROVEMENTS.md"
+      }
+    },
+    {
+      "item_id": "github-thread:PRRT_kwDORD6Aas6Cn73p",
+      "classification": "fix",
+      "note": "Replaced hardcoded 'main' with 'default branch' in AUTOMATION_IMPROVEMENTS.md.",
+      "evidence": {
+        "commit": "b98f122573bf27483035255a3859f8db8dce468a",
+        "path": "AUTOMATION_IMPROVEMENTS.md"
+      }
+    },
+    {
+      "item_id": "github-thread:PRRT_kwDORD6Aas6Cn73x",
+      "classification": "fix",
+      "note": "Replaced 'main' with 'default branch' for Merge Queue section in AUTOMATION_IMPROVEMENTS.md.",
+      "evidence": {
+        "commit": "b98f122573bf27483035255a3859f8db8dce468a",
+        "path": "AUTOMATION_IMPROVEMENTS.md"
+      }
+    },
+    {
+      "item_id": "github-thread:PRRT_kwDORD6Aas6Cn735",
+      "classification": "fix",
+      "note": "Updated PR title and description to reflect workflow changes.",
+      "evidence": {
+        "commit": "b98f122573bf27483035255a3859f8db8dce468a"
+      }
+    },
+    {
+      "item_id": "github-thread:PRRT_kwDORD6Aas6Cn71F",
+      "classification": "reject",
+      "note": "I am keeping the 'gh api' call because 'gh pr list --head' does not support the '<owner>:<branch>' syntax required for robust PR detection when syncing from specific branches or forks. The API call is more precise and avoids the false-positive errors seen in recent CI runs.",
+      "evidence": {
+        "commit": "b98f122573bf27483035255a3859f8db8dce468a"
+      }
+    }
+  ],
+  "agent_id": "gemini-cli"
+}
