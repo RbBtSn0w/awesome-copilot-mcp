@@ -31,9 +31,20 @@ jobs:
             --state open \
             --json number,title,url,labels,updatedAt > open-dependabot-prs.json
 
+      - name: Check automation health
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Check the last 3 runs of critical workflows
+          gh run list --workflow upstream-sync.yml --limit 3 --json status,conclusion > upstream-sync-health.json
+          gh run list --workflow dependabot-auto-merge.yml --limit 3 --json status,conclusion > auto-merge-health.json
+
       - name: Render inbox markdown
         run: |
-          node scripts/dependency-automation.js render-inbox --input open-dependabot-prs.json > dependency-inbox.md
+          node scripts/dependency-automation.js render-inbox \
+            --input open-dependabot-prs.json \
+            --upstream-health upstream-sync-health.json \
+            --merge-health auto-merge-health.json > dependency-inbox.md
           cat dependency-inbox.md
 
       - name: Create or update inbox issue

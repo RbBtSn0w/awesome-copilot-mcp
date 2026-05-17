@@ -1,0 +1,35 @@
+name: Auto-Rebase PRs
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  rebase:
+    runs-on: ubuntu-latest
+    if: github.repository == 'RbBtSn0w/awesome-copilot-mcp'
+    steps:
+      - name: Generate GitHub App Token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
+      - name: Rebase open auto-merge PRs
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          # Find all open PRs with the 'deps:merge:auto' label
+          PR_NUMBERS=$(gh pr list --label "deps:merge:auto" --state open --json number --jq '.[].number')
+
+          for PR in $PR_NUMBERS; do
+            echo "Updating PR #$PR..."
+            gh pr update-branch "$PR" || echo "Failed to update PR #$PR"
+          done

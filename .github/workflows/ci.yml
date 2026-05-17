@@ -7,6 +7,10 @@ on:
     branches: [ main, develop ]
   workflow_dispatch:
 
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
@@ -36,36 +40,21 @@ jobs:
         file: ./coverage/lcov.info
         token: ${{ secrets.CODECOV_TOKEN }}
 
-  compat-node20:
-    name: Node Compatibility (20.x)
+  compatibility:
+    name: Node Compatibility (${{ matrix.node-version }}.x)
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [20, 24]
 
     steps:
     - uses: actions/checkout@v6
 
-    - name: Use Node.js 20.x
+    - name: Use Node.js ${{ matrix.node-version }}.x
       uses: actions/setup-node@v6
       with:
-        node-version: 20.x
-        cache: 'npm'
-
-    - name: Install dependencies
-      run: npm ci
-
-    - name: Run compatibility checks
-      run: npm run ci:compat
-
-  compat-node24:
-    name: Node Compatibility (24.x)
-    runs-on: ubuntu-latest
-
-    steps:
-    - uses: actions/checkout@v6
-
-    - name: Use Node.js 24.x
-      uses: actions/setup-node@v6
-      with:
-        node-version: 24.x
+        node-version: ${{ matrix.node-version }}.x
         cache: 'npm'
 
     - name: Install dependencies
@@ -76,7 +65,7 @@ jobs:
 
   ci-success:
     name: CI Success
-    needs: [quality-gate, compat-node20, compat-node24]
+    needs: [quality-gate, compatibility]
     if: always()
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -86,8 +75,7 @@ jobs:
       run: |
         results=(
           "${{ needs.quality-gate.result }}"
-          "${{ needs.compat-node20.result }}"
-          "${{ needs.compat-node24.result }}"
+          "${{ needs.compatibility.result }}"
         )
 
         for result in "${results[@]}"; do
@@ -98,38 +86,3 @@ jobs:
         done
 
         echo "All CI jobs passed."
-
-  publish-beta:
-    name: Publish Beta Release to npm
-    needs: ci-success
-    runs-on: ubuntu-latest
-    # Only run publish on manual trigger from main branch
-    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
-    permissions:
-      contents: read
-      id-token: write # Required for NPM provenance and Granular Token OIDC
-
-    steps:
-    - uses: actions/checkout@v6
-
-    - name: Use Node.js 22.x
-      uses: actions/setup-node@v6
-      with:
-        node-version: 22.x
-        cache: 'npm'
-        registry-url: 'https://registry.npmjs.org'
-
-    - name: Install dependencies
-      run: npm ci
-
-    - name: Set Beta Version
-      run: |
-        # Generate timestamp in YYYYMMDDHHmm format
-        TIMESTAMP=$(date +%Y%m%d%H%M)
-        # Update version to 0.0.1-beta.202401292130
-        npm version prerelease --preid=beta.${TIMESTAMP} --no-git-tag-version
-        echo "Version set to $(node -p "require('./package.json').version")"
-
-    - name: Publish to npm
-      run: |
-        npm publish --tag beta --provenance --access public

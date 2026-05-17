@@ -1,0 +1,71 @@
+name: Beta Release
+
+on:
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - '.github/workflows/beta-release.yml'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'scripts/**'
+      - 'src/**'
+      - 'tsconfig*.json'
+  workflow_dispatch:
+
+concurrency:
+  group: beta-release-main
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  verify-beta:
+    name: Verify Beta Release Candidate
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v6
+
+    - name: Use Node.js 22.x
+      uses: actions/setup-node@v6
+      with:
+        node-version: 22.x
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Verify beta candidate
+      run: npm run ci:release-verify
+
+  publish-beta:
+    name: Publish Beta Release to npm
+    needs: verify-beta
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+    - uses: actions/checkout@v6
+
+    - name: Use Node.js 22.x
+      uses: actions/setup-node@v6
+      with:
+        node-version: 22.x
+        cache: 'npm'
+        registry-url: 'https://registry.npmjs.org'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Set Beta Version
+      run: |
+        TIMESTAMP=$(date +%Y%m%d%H%M)
+        npm version prerelease --preid=beta.${TIMESTAMP} --no-git-tag-version
+        echo "Version set to $(node -p "require('./package.json').version")"
+
+    - name: Publish to npm
+      run: npm publish --tag beta --provenance --access public
