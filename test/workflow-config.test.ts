@@ -10,6 +10,14 @@ function loadWorkflow(fileName: string): string {
   return fs.readFileSync(path.join(workflowsRoot, fileName), 'utf8');
 }
 
+function loadWorkflowConfig(fileName: string): {
+  jobs?: Record<string, { steps?: Array<Record<string, unknown>> }>;
+} {
+  return yaml.load(loadWorkflow(fileName)) as {
+    jobs?: Record<string, { steps?: Array<Record<string, unknown>> }>;
+  };
+}
+
 function loadDependabotConfig(): string {
   return fs.readFileSync(path.join(repoRoot, '.github', 'dependabot.yml'), 'utf8');
 }
@@ -65,15 +73,26 @@ describe('workflow automation contracts', () => {
 
   it('checks out the repository before rebasing auto-merge PRs', () => {
     const workflow = loadWorkflow('auto-rebase.yml');
+    const workflowConfig = loadWorkflowConfig('auto-rebase.yml');
+    const rebaseSteps = workflowConfig.jobs?.rebase?.steps ?? [];
+    const checkoutStepIndex = rebaseSteps.findIndex((step) => {
+      const withConfig = step.with as Record<string, unknown> | undefined;
+
+      return (
+        step.name === 'Checkout' &&
+        step.uses === 'actions/checkout@v6' &&
+        withConfig?.token === '${{ steps.app-token.outputs.token }}'
+      );
+    });
+    const rebaseStepIndex = rebaseSteps.findIndex(
+      (step) => step.name === 'Rebase open auto-merge PRs',
+    );
 
     expect(workflow).toContain('name: Auto-Rebase PRs');
     expect(workflow).toContain('name: Generate GitHub App Token');
-    expect(workflow).toContain('name: Checkout');
-    expect(workflow).toContain('uses: actions/checkout@v6');
-    expect(workflow).toContain('token: ${{ steps.app-token.outputs.token }}');
-    expect(workflow.indexOf('name: Checkout')).toBeLessThan(
-      workflow.indexOf('name: Rebase open auto-merge PRs'),
-    );
+    expect(checkoutStepIndex).toBeGreaterThanOrEqual(0);
+    expect(rebaseStepIndex).toBeGreaterThanOrEqual(0);
+    expect(checkoutStepIndex).toBeLessThan(rebaseStepIndex);
     expect(workflow).toContain('gh pr list --label "deps:merge:auto"');
     expect(workflow).toContain('gh pr update-branch "$PR"');
   });
