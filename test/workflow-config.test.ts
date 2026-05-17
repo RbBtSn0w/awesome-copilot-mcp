@@ -13,6 +13,30 @@ function loadDependabotConfig(): string {
 }
 
 describe('workflow automation contracts', () => {
+  it('keeps CI validation focused and parallelized', () => {
+    const workflow = loadWorkflow('ci.yml');
+
+    expect(workflow).toContain('quality-gate:');
+    expect(workflow).toContain('compatibility:');
+    expect(workflow).toContain('matrix:');
+    expect(workflow).toContain('node-version: [20, 24]');
+    expect(workflow).toContain('fail-fast: false');
+    expect(workflow).toContain('needs: [quality-gate, compatibility]');
+    expect(workflow).not.toContain('compat-node20:');
+    expect(workflow).not.toContain('compat-node24:');
+    expect(workflow).not.toContain('publish-beta:');
+  });
+
+  it('keeps beta publishing outside the required CI workflow', () => {
+    const workflow = loadWorkflow('beta-release.yml');
+
+    expect(workflow).toContain('name: Beta Release');
+    expect(workflow).toContain('workflow_dispatch:');
+    expect(workflow).toContain('if: github.ref == \'refs/heads/main\'');
+    expect(workflow).toContain('npm run ci:release-verify');
+    expect(workflow).toContain('npm publish --tag beta --provenance --access public');
+  });
+
   it('opens an upstream sync pull request instead of pushing directly to main', () => {
     const workflow = loadWorkflow('upstream-sync.yml');
 

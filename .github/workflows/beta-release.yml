@@ -1,0 +1,43 @@
+name: Beta Release
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: beta-release-main
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish-beta:
+    name: Publish Beta Release to npm
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+    - uses: actions/checkout@v6
+
+    - name: Use Node.js 22.x
+      uses: actions/setup-node@v6
+      with:
+        node-version: 22.x
+        cache: 'npm'
+        registry-url: 'https://registry.npmjs.org'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Verify beta candidate
+      run: npm run ci:release-verify
+
+    - name: Set Beta Version
+      run: |
+        TIMESTAMP=$(date +%Y%m%d%H%M)
+        npm version prerelease --preid=beta.${TIMESTAMP} --no-git-tag-version
+        echo "Version set to $(node -p "require('./package.json').version")"
+
+    - name: Publish to npm
+      run: npm publish --tag beta --provenance --access public
