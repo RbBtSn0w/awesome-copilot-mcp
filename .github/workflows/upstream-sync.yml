@@ -57,7 +57,7 @@ jobs:
           - Source workflow: \`${{ github.workflow }} #${{ github.run_number }}\`
           EOF
 
-          PR_NUMBER=$(gh pr list --head "$GITHUB_REPOSITORY_OWNER:$SYNC_BRANCH" --repo "$GITHUB_REPOSITORY" --state open --json number --jq '.[0].number // empty')
+          PR_NUMBER=$(gh pr list --head "$SYNC_BRANCH" --base main --repo "$GITHUB_REPOSITORY" --state open --json number --jq '.[0].number // empty')
 
           if [ -n "$PR_NUMBER" ]; then
             gh pr edit "$PR_NUMBER" \
