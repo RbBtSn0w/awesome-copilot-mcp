@@ -1,3 +1,10 @@
+## [0.7.11](https://github.com/RbBtSn0w/awesome-copilot-mcp/compare/v0.7.10...v0.7.11) (2026-05-17)
+
+
+### Bug Fixes
+
+* detect existing upstream sync pull request ([#71](https://github.com/RbBtSn0w/awesome-copilot-mcp/issues/71)) ([d701d25](https://github.com/RbBtSn0w/awesome-copilot-mcp/commit/d701d25aa16a17d14d849d71ca714412babe58ca))
+
 ## [0.7.10](https://github.com/RbBtSn0w/awesome-copilot-mcp/compare/v0.7.9...v0.7.10) (2026-05-11)
 
 
