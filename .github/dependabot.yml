@@ -21,6 +21,8 @@ updates:
         update-types:
           - "minor"
           - "patch"
+        patterns:
+          - "*"
 
   - package-ecosystem: "github-actions"
     directory: "/"

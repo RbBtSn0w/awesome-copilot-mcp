@@ -18,7 +18,7 @@
     "build": "tsc -p tsconfig.build.json && chmod +x dist/cli.js",
     "clean": "rm -rf dist coverage",
     "ci": "npm run ci:quality",
-    "ci:quality": "npm run clean && npm run generate-metadata && npm run lint && npm run typecheck && npm run test:coverage && npm run build && npm pack --dry-run",
+    "ci:quality": "npm run clean && npm run generate-metadata && npm run check:metadata-size && npm run lint && npm run typecheck && npm run test:coverage && npm run build && npm pack --dry-run",
     "ci:compat": "npm run clean && npm run build && npm run test",
     "ci:release-verify": "npm run clean && npm run generate-metadata && npm run build && npm pack --dry-run",
     "dev": "tsc --watch",
