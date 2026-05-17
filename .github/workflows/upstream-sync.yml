@@ -36,6 +36,12 @@ jobs:
         id: check
         run: node scripts/sync-upstream.js
 
+      - name: Validate Sync Update
+        if: steps.check.outputs.updated == 'true'
+        run: |
+          npm ci
+          npm run ci:quality
+
       - name: Open Sync Pull Request
         if: steps.check.outputs.updated == 'true'
         env:
@@ -58,6 +64,8 @@ jobs:
           - Source workflow: \`${{ github.workflow }} #${{ github.run_number }}\`
           EOF
 
+          # We use 'gh api' because 'gh pr list --head' does not support '<owner>:<branch>' syntax,
+          # which is needed for robust PR detection when syncing from specific branches or forks.
           PR_NUMBER=$(gh api --method GET "/repos/$GITHUB_REPOSITORY/pulls" \
             -f head="$GITHUB_REPOSITORY_OWNER:$SYNC_BRANCH" \
             -f base="$DEFAULT_BRANCH" \

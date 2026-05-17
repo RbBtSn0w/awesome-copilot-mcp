@@ -40,6 +40,7 @@ jobs:
           gh label create "deps:risk:actions" --color "5319e7" --description "GitHub Actions update that requires manual review" --force
           gh label create "deps:merge:auto" --color "1d76db" --description "Dependency update is eligible for automated merge after CI succeeds" --force
           gh label create "deps:merge:manual" --color "b60205" --description "Dependency update stays in the manual review queue" --force
+          gh label create "deps:ci:failed" --color "d1242f" --description "Dependency automation detected a failed CI run" --force
 
       - name: Classify dependency policy
         id: classify
@@ -119,8 +120,12 @@ jobs:
         id: pr
         env:
           WORKFLOW_RUN_PULL_REQUESTS: ${{ toJson(github.event.workflow_run.pull_requests) }}
+          WORKFLOW_RUN_HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
         run: |
           PR_NUMBER="$(node -e "const prs = JSON.parse(process.env.WORKFLOW_RUN_PULL_REQUESTS || '[]'); process.stdout.write(prs.length ? String(prs[0].number) : '');")"
+          if [ -z "$PR_NUMBER" ] && [ -n "$WORKFLOW_RUN_HEAD_BRANCH" ]; then
+            PR_NUMBER="$(gh pr list --head "$WORKFLOW_RUN_HEAD_BRANCH" --state open --json number --jq '.[0].number // empty')"
+          fi
           if [ -z "$PR_NUMBER" ]; then
             echo "should_merge=false" >> "$GITHUB_OUTPUT"
             echo "reason=No pull request is attached to this CI run." >> "$GITHUB_OUTPUT"
@@ -165,4 +170,98 @@ jobs:
       - name: Summarize merge decision
         run: |
           echo "Merge eligible: ${{ steps.pr.outputs.should_merge }}"
+          echo "Reason: ${{ steps.pr.outputs.reason }}"
+
+  diagnose-failed-ci:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'failure'
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - name: Resolve automation PR from failed CI run
+        id: pr
+        env:
+          WORKFLOW_RUN_PULL_REQUESTS: ${{ toJson(github.event.workflow_run.pull_requests) }}
+          WORKFLOW_RUN_HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
+          WORKFLOW_RUN_URL: ${{ github.event.workflow_run.html_url }}
+          WORKFLOW_RUN_ID: ${{ github.event.workflow_run.id }}
+        run: |
+          PR_NUMBER="$(node -e "const prs = JSON.parse(process.env.WORKFLOW_RUN_PULL_REQUESTS || '[]'); process.stdout.write(prs.length ? String(prs[0].number) : '');")"
+          if [ -z "$PR_NUMBER" ] && [ -n "$WORKFLOW_RUN_HEAD_BRANCH" ]; then
+            PR_NUMBER="$(gh pr list --head "$WORKFLOW_RUN_HEAD_BRANCH" --state open --json number --jq '.[0].number // empty')"
+          fi
+          if [ -z "$PR_NUMBER" ]; then
+            echo "should_diagnose=false" >> "$GITHUB_OUTPUT"
+            echo "reason=No pull request is attached to this failed CI run." >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          export PR_NUMBER
+          gh pr view "$PR_NUMBER" --json author,isDraft,labels,state,title,url > pr.json
+
+          node <<'NODE'
+          const fs = require('fs');
+          const pr = JSON.parse(fs.readFileSync('pr.json', 'utf8'));
+          const labels = (pr.labels || []).map((item) => item.name);
+          const isAutomationPr =
+            pr.state === 'OPEN' &&
+            !pr.isDraft &&
+            (pr.author?.login === 'dependabot[bot]' || pr.author?.login === 'rbbtsn0w-bot[bot]' || pr.author?.login === 'rbbtsn0w-bot');
+
+          const entries = {
+            pr_number: process.env.PR_NUMBER,
+            pr_url: pr.url || '',
+            should_diagnose: String(isAutomationPr),
+            had_auto_merge_label: String(labels.includes('deps:merge:auto')),
+            reason: isAutomationPr
+              ? 'Failed CI belongs to an open automation PR.'
+              : 'Failed CI does not belong to an open automation PR.',
+          };
+
+          for (const [key, value] of Object.entries(entries)) {
+            fs.appendFileSync(process.env.GITHUB_OUTPUT, `${key}=${String(value).replace(/\n/g, ' ')}\n`);
+          }
+          NODE
+
+          {
+            echo "comment_body<<EOF"
+            echo "<!-- dependency-automation-ci-failed -->"
+            echo "Dependency automation detected a failed CI run for this PR."
+            echo ""
+            echo "- CI run: ${WORKFLOW_RUN_URL}"
+            echo "- Policy: auto-merge is disabled until CI is repaired."
+            echo ""
+            echo "This is intentionally routed to the manual dependency queue because the proposed update does not pass the repository quality gate."
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Mark failed automation PR
+        if: steps.pr.outputs.should_diagnose == 'true'
+        env:
+          PR_URL: ${{ steps.pr.outputs.pr_url }}
+          COMMENT_BODY: ${{ steps.pr.outputs.comment_body }}
+        run: |
+          gh label create "deps:ci:failed" --color "d1242f" --description "Dependency automation detected a failed CI run" --force
+          gh pr edit "$PR_URL" \
+            --add-label "deps:ci:failed" \
+            --add-label "deps:merge:manual"
+          gh pr edit "$PR_URL" --remove-label "deps:merge:auto" >/dev/null 2>&1 || true
+
+          EXISTING_COMMENT_ID="$(gh api "repos/${GH_REPO}/issues/${{ steps.pr.outputs.pr_number }}/comments" \
+            --jq '.[] | select(.body | contains("<!-- dependency-automation-ci-failed -->")) | .id' \
+            | tail -n 1)"
+
+          if [ -n "$EXISTING_COMMENT_ID" ]; then
+            gh api \
+              --method PATCH \
+              "repos/${GH_REPO}/issues/comments/${EXISTING_COMMENT_ID}" \
+              -f body="$COMMENT_BODY" >/dev/null
+          else
+            gh pr comment "$PR_URL" --body "$COMMENT_BODY"
+          fi
+
+      - name: Summarize failed CI diagnosis
+        run: |
+          echo "Diagnose eligible: ${{ steps.pr.outputs.should_diagnose }}"
           echo "Reason: ${{ steps.pr.outputs.reason }}"

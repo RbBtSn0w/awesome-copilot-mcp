@@ -123,7 +123,15 @@ function groupForLabels(labels) {
   return 'unclassified';
 }
 
-function renderDependencyInbox(prs = []) {
+function renderHealthStatus(name, healthData = []) {
+  if (!healthData.length) return `• **${name}**: No data`;
+  const recentFailures = healthData.filter(r => r.conclusion === 'failure');
+  const icon = recentFailures.length > 0 ? '❌' : '✅';
+  const detail = recentFailures.length > 0 ? `(${recentFailures.length}/3 recent runs failed)` : '(Stable)';
+  return `• **${name}**: ${icon} ${detail}`;
+}
+
+function renderDependencyInbox(prs = [], options = {}) {
   const groups = {
     runtime: [],
     toolchain: [],
@@ -148,6 +156,10 @@ function renderDependencyInbox(prs = []) {
     '# Dependency Inbox',
     '',
     `Generated at: \`${new Date().toISOString()}\``,
+    '',
+    '## 📊 Automation Health',
+    renderHealthStatus('Upstream Sync', options.upstreamHealth),
+    renderHealthStatus('Auto-Merge', options.mergeHealth),
     '',
     `Open Dependabot PRs: **${prs.length}**`,
   ];
@@ -220,7 +232,9 @@ function main(argv = process.argv.slice(2)) {
 
   if (command === 'render-inbox') {
     const input = readJsonInput(options.input);
-    process.stdout.write(renderDependencyInbox(input));
+    const upstreamHealth = options['upstream-health'] ? readJsonInput(options['upstream-health']) : [];
+    const mergeHealth = options['merge-health'] ? readJsonInput(options['merge-health']) : [];
+    process.stdout.write(renderDependencyInbox(input, { upstreamHealth, mergeHealth }));
     return 0;
   }
 
