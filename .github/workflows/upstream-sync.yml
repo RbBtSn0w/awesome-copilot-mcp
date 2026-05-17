@@ -40,6 +40,7 @@ jobs:
         if: steps.check.outputs.updated == 'true'
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
           UPSTREAM_SHA: ${{ steps.check.outputs.sha }}
         run: |
           git config --global user.name 'github-actions[bot]'
@@ -57,7 +58,11 @@ jobs:
           - Source workflow: \`${{ github.workflow }} #${{ github.run_number }}\`
           EOF
 
-          PR_NUMBER=$(gh pr list --head "$SYNC_BRANCH" --base main --repo "$GITHUB_REPOSITORY" --state open --json number --jq '.[0].number // empty')
+          PR_NUMBER=$(gh api --method GET "/repos/$GITHUB_REPOSITORY/pulls" \
+            -f head="$GITHUB_REPOSITORY_OWNER:$SYNC_BRANCH" \
+            -f base="$DEFAULT_BRANCH" \
+            -f state=open \
+            --jq '.[0].number // empty')
 
           if [ -n "$PR_NUMBER" ]; then
             gh pr edit "$PR_NUMBER" \
@@ -69,7 +74,7 @@ jobs:
           else
             gh pr create \
               --repo "$GITHUB_REPOSITORY" \
-              --base main \
+              --base "$DEFAULT_BRANCH" \
               --head "$SYNC_BRANCH" \
               --title "$PR_TITLE" \
               --body-file pr-body.md \
