@@ -63,6 +63,21 @@ describe('workflow automation contracts', () => {
     expect(workflow).toContain('npm publish --tag beta --provenance --access public');
   });
 
+  it('checks out the repository before rebasing auto-merge PRs', () => {
+    const workflow = loadWorkflow('auto-rebase.yml');
+
+    expect(workflow).toContain('name: Auto-Rebase PRs');
+    expect(workflow).toContain('name: Generate GitHub App Token');
+    expect(workflow).toContain('name: Checkout');
+    expect(workflow).toContain('uses: actions/checkout@v6');
+    expect(workflow).toContain('token: ${{ steps.app-token.outputs.token }}');
+    expect(workflow.indexOf('name: Checkout')).toBeLessThan(
+      workflow.indexOf('name: Rebase open auto-merge PRs'),
+    );
+    expect(workflow).toContain('gh pr list --label "deps:merge:auto"');
+    expect(workflow).toContain('gh pr update-branch "$PR"');
+  });
+
   it('opens an upstream sync pull request instead of pushing directly to main', () => {
     const workflow = loadWorkflow('upstream-sync.yml');
 
