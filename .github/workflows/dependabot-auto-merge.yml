@@ -226,7 +226,7 @@ jobs:
 
           {
             echo "comment_body<<EOF"
-            echo "<!-- dependency-automation-ci-failed:${WORKFLOW_RUN_ID} -->"
+            echo "<!-- dependency-automation-ci-failed -->"
             echo "Dependency automation detected a failed CI run for this PR."
             echo ""
             echo "- CI run: ${WORKFLOW_RUN_URL}"
@@ -247,7 +247,19 @@ jobs:
             --add-label "deps:ci:failed" \
             --add-label "deps:merge:manual"
           gh pr edit "$PR_URL" --remove-label "deps:merge:auto" >/dev/null 2>&1 || true
-          gh pr comment "$PR_URL" --body "$COMMENT_BODY"
+
+          EXISTING_COMMENT_ID="$(gh api "repos/${GH_REPO}/issues/${{ steps.pr.outputs.pr_number }}/comments" \
+            --jq '.[] | select(.body | contains("<!-- dependency-automation-ci-failed -->")) | .id' \
+            | tail -n 1)"
+
+          if [ -n "$EXISTING_COMMENT_ID" ]; then
+            gh api \
+              --method PATCH \
+              "repos/${GH_REPO}/issues/comments/${EXISTING_COMMENT_ID}" \
+              -f body="$COMMENT_BODY" >/dev/null
+          else
+            gh pr comment "$PR_URL" --body "$COMMENT_BODY"
+          fi
 
       - name: Summarize failed CI diagnosis
         run: |

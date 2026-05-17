@@ -14,6 +14,10 @@ function loadDependabotConfig(): string {
   return fs.readFileSync(path.join(repoRoot, '.github', 'dependabot.yml'), 'utf8');
 }
 
+function loadPackageJson(): Record<string, unknown> {
+  return JSON.parse(fs.readFileSync(path.join(repoRoot, 'package.json'), 'utf8'));
+}
+
 describe('workflow automation contracts', () => {
   it('keeps all GitHub Actions workflow YAML parseable in pull requests', () => {
     const workflowFiles = fs
@@ -53,6 +57,8 @@ describe('workflow automation contracts', () => {
     expect(workflow).toContain('workflow_dispatch:');
     expect(workflow).toContain("if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'");
     expect(workflow).toContain('needs: verify-beta');
+    expect(workflow).toMatch(/publish-beta:[\s\S]*permissions:\s*\n\s+contents:\s*read\s*\n\s+id-token:\s*write/);
+    expect(workflow).not.toMatch(/permissions:\s*\n\s+contents:\s*read\s*\n\s+id-token:\s*write\s*\n\s*jobs:/);
     expect(workflow).toContain('npm run ci:release-verify');
     expect(workflow).toContain('npm publish --tag beta --provenance --access public');
   });
@@ -110,6 +116,9 @@ describe('workflow automation contracts', () => {
     expect(workflow).toContain("github.event.workflow_run.conclusion == 'failure'");
     expect(workflow).toContain('deps:ci:failed');
     expect(workflow).toContain('Dependency automation detected a failed CI run for this PR.');
+    expect(workflow).toContain('<!-- dependency-automation-ci-failed -->');
+    expect(workflow).toContain('EXISTING_COMMENT_ID=');
+    expect(workflow).toContain('--method PATCH');
   });
 
   it('keeps breaking dependency majors out of the automated PR queue', () => {
@@ -119,5 +128,14 @@ describe('workflow automation contracts', () => {
     expect(config).toContain('dependency-name: "*"');
     expect(config).toContain('"version-update:semver-major"');
     expect(config).not.toContain('- "github-actions"');
+  });
+
+  it('declares workflow test parser dependencies explicitly', () => {
+    const packageJson = loadPackageJson() as { devDependencies?: Record<string, string> };
+
+    expect(packageJson.devDependencies).toMatchObject({
+      'js-yaml': '^4.1.0',
+      '@types/js-yaml': '^4.0.9',
+    });
   });
 });
