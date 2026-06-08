@@ -1,0 +1,23 @@
+[
+  {
+    "file": ".github/workflows/dependabot-auto-merge.yml",
+    "line": 18,
+    "description": "Expanded author check for Dependabot is robust and covers edge cases where the bot login might vary.",
+    "type": "CORRECTNESS",
+    "severity": "P3"
+  },
+  {
+    "file": ".github/workflows/dependabot-auto-merge.yml",
+    "line": 172,
+    "description": "Self-healing logic to clear failure labels is a great operational improvement.",
+    "type": "MAINTAINABILITY",
+    "severity": "P3"
+  },
+  {
+    "file": "scripts/dependency-automation.js",
+    "line": 89,
+    "description": "Relaxing auto-merge rules for non-major updates will significantly reduce manual maintenance overhead while keeping high-risk updates (Major, Core SDK, Actions) gated.",
+    "type": "MAINTAINABILITY",
+    "severity": "P3"
+  }
+]
