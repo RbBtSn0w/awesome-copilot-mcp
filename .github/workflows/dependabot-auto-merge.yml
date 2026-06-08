@@ -15,7 +15,7 @@ permissions:
 jobs:
   classify-pr:
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request_target' && github.event.pull_request.user.login == 'dependabot[bot]'
+    if: github.event_name == 'pull_request_target' && (github.event.pull_request.user.login == 'dependabot[bot]' || github.event.pull_request.user.login == 'dependabot' || github.event.pull_request.user.login == 'app/dependabot')
     steps:
       - uses: actions/checkout@v6
 
@@ -141,7 +141,12 @@ jobs:
           const fs = require('fs');
           const pr = JSON.parse(fs.readFileSync('pr.json', 'utf8'));
           const labels = (pr.labels || []).map((item) => item.name);
-          const isAutomationAuthor = pr.author?.login === 'dependabot[bot]' || pr.author?.login === 'rbbtsn0w-bot[bot]' || pr.author?.login === 'rbbtsn0w-bot';
+          const isAutomationAuthor = 
+            pr.author?.login === 'dependabot[bot]' || 
+            pr.author?.login === 'dependabot' || 
+            pr.author?.login === 'app/dependabot' || 
+            pr.author?.login === 'rbbtsn0w-bot[bot]' || 
+            pr.author?.login === 'rbbtsn0w-bot';
           const shouldMerge =
             pr.state === 'OPEN' &&
             !pr.isDraft &&
@@ -220,7 +225,7 @@ jobs:
           const isAutomationPr =
             pr.state === 'OPEN' &&
             !pr.isDraft &&
-            (pr.author?.login === 'dependabot[bot]' || pr.author?.login === 'rbbtsn0w-bot[bot]' || pr.author?.login === 'rbbtsn0w-bot');
+            (pr.author?.login === 'dependabot[bot]' || pr.author?.login === 'dependabot' || pr.author?.login === 'app/dependabot' || pr.author?.login === 'rbbtsn0w-bot[bot]' || pr.author?.login === 'rbbtsn0w-bot');
 
           const entries = {
             pr_number: process.env.PR_NUMBER,
