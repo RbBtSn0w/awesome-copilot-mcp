@@ -91,18 +91,18 @@ function classifyDependabotPr(input = {}) {
     risk = 'runtime';
     autoMerge = false;
     reason = 'Core SDK updates require manual verification of breaking changes or behavior shifts.';
-  } else if (isRuntimeUpdate) {
-    risk = 'runtime';
-    autoMerge = !isMajorUpdate;
-    reason = isMajorUpdate
-      ? 'Major runtime updates require manual review and potential code adjustments.'
-      : 'Non-major runtime updates are eligible for automated merge after CI validation.';
   } else if (isToolchainUpdate) {
     risk = 'toolchain';
     autoMerge = !isMajorUpdate;
     reason = isMajorUpdate
       ? 'Major toolchain upgrades require manual verification of the build and lint pipelines.'
       : 'Non-major toolchain updates are eligible for automated merge after CI validation.';
+  } else if (isRuntimeUpdate) {
+    risk = 'runtime';
+    autoMerge = !isMajorUpdate;
+    reason = isMajorUpdate
+      ? 'Major runtime updates require manual review and potential code adjustments.'
+      : 'Non-major runtime updates are eligible for automated merge after CI validation.';
   }
 
   if (isMajorUpdate && autoMerge) {
