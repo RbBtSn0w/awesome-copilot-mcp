@@ -19,10 +19,26 @@ describe('classifyDependabotPr', () => {
     });
   });
 
-  it('keeps toolchain updates in the manual queue', () => {
+  it('allows non-major toolchain updates to auto-merge', () => {
+    const result = classifyDependabotPr({
+      title: 'chore(deps-dev): bump typescript from 5.9.3 to 5.10.3',
+      updateType: 'version-update:semver-minor',
+      dependencyType: 'direct:development',
+      dependencyNames: 'typescript',
+      labels: 'dependencies',
+    });
+
+    expect(result).toMatchObject({
+      autoMerge: true,
+      mergeLabel: 'deps:merge:auto',
+      riskLabel: 'deps:risk:toolchain',
+    });
+  });
+
+  it('keeps major toolchain updates in the manual queue', () => {
     const result = classifyDependabotPr({
       title: 'chore(deps-dev): bump typescript from 5.9.3 to 6.0.3',
-      updateType: 'version-update:semver-minor',
+      updateType: 'version-update:semver-major',
       dependencyType: 'direct:development',
       dependencyNames: 'typescript',
       labels: 'dependencies',
@@ -35,7 +51,23 @@ describe('classifyDependabotPr', () => {
     });
   });
 
-  it('keeps runtime updates in the manual queue', () => {
+  it('allows non-major runtime updates to auto-merge', () => {
+    const result = classifyDependabotPr({
+      title: 'chore(deps): bump axios from 1.6.0 to 1.7.0',
+      updateType: 'version-update:semver-minor',
+      dependencyType: 'direct:production',
+      dependencyNames: 'axios',
+      labels: 'dependencies',
+    });
+
+    expect(result).toMatchObject({
+      autoMerge: true,
+      mergeLabel: 'deps:merge:auto',
+      riskLabel: 'deps:risk:runtime',
+    });
+  });
+
+  it('keeps core SDK updates in the manual queue even if non-major', () => {
     const result = classifyDependabotPr({
       title: 'chore(deps): bump @modelcontextprotocol/sdk from 1.29.0 to 1.30.0',
       updateType: 'version-update:semver-minor',
@@ -46,6 +78,7 @@ describe('classifyDependabotPr', () => {
 
     expect(result).toMatchObject({
       autoMerge: false,
+      mergeLabel: 'deps:merge:manual',
       riskLabel: 'deps:risk:runtime',
     });
   });
