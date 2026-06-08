@@ -116,6 +116,8 @@ jobs:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       GH_REPO: ${{ github.repository }}
     steps:
+      - uses: actions/checkout@v6
+
       - name: Resolve automation PR from CI run
         id: pr
         env:
@@ -139,16 +141,19 @@ jobs:
           const fs = require('fs');
           const pr = JSON.parse(fs.readFileSync('pr.json', 'utf8'));
           const labels = (pr.labels || []).map((item) => item.name);
+          const isAutomationAuthor = pr.author?.login === 'dependabot[bot]' || pr.author?.login === 'rbbtsn0w-bot[bot]' || pr.author?.login === 'rbbtsn0w-bot';
           const shouldMerge =
             pr.state === 'OPEN' &&
             !pr.isDraft &&
-            (pr.author?.login === 'dependabot[bot]' || pr.author?.login === 'rbbtsn0w-bot[bot]' || pr.author?.login === 'rbbtsn0w-bot') &&
+            isAutomationAuthor &&
             labels.includes('deps:merge:auto');
 
           const entries = {
             pr_number: process.env.PR_NUMBER,
             pr_url: pr.url || '',
             should_merge: String(shouldMerge),
+            has_failure_label: String(labels.includes('deps:ci:failed')),
+            is_automation: String(isAutomationAuthor),
             reason: shouldMerge
               ? 'CI succeeded for an auto-merge eligible automation PR.'
               : 'CI succeeded, but this PR is not eligible for automated merge.',
@@ -158,6 +163,14 @@ jobs:
             fs.appendFileSync(process.env.GITHUB_OUTPUT, `${key}=${String(value).replace(/\n/g, ' ')}\n`);
           }
           NODE
+
+      - name: Self-healing (Clear failure labels)
+        if: steps.pr.outputs.is_automation == 'true' && steps.pr.outputs.has_failure_label == 'true'
+        env:
+          PR_URL: ${{ steps.pr.outputs.pr_url }}
+        run: |
+          echo "CI succeeded for a previously failed PR. Clearing failure marks."
+          gh pr edit "$PR_URL" --remove-label "deps:ci:failed" || true
 
       - name: Merge approved low-risk update
         if: steps.pr.outputs.should_merge == 'true'
