@@ -145,7 +145,8 @@ describe('workflow automation contracts', () => {
     expect(workflow).toContain('gh pr view "$PR_NUMBER"');
     expect(workflow).toContain('WORKFLOW_RUN_HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}');
     expect(workflow).toContain('gh pr list --head "$WORKFLOW_RUN_HEAD_BRANCH"');
-    expect(workflow).toContain("pr.author?.login === 'dependabot[bot]' || pr.author?.login === 'rbbtsn0w-bot[bot]' || pr.author?.login === 'rbbtsn0w-bot'");
+    expect(workflow).toContain("const author = (pr.author?.login || '').replace(/^app\\//, '').replace(/\\[bot\\]$/, '');");
+    expect(workflow).toContain("const isAutomationAuthor = ['dependabot', 'rbbtsn0w-bot'].includes(author);");
     expect(workflow).toContain('diagnose-failed-ci:');
     expect(workflow).toContain("github.event.workflow_run.conclusion == 'failure'");
     expect(workflow).toContain('deps:ci:failed');
