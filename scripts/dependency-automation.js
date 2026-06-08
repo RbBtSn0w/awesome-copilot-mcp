@@ -71,8 +71,9 @@ function classifyDependabotPr(input = {}) {
   const labels = normalizeList(input.labels).map((item) => item.toLowerCase());
 
   const isActionsUpdate = labels.includes('github-actions') || title.startsWith('ci(deps)');
+  const isCriticalRuntimeUpdate = dependencyNames.includes('@modelcontextprotocol/sdk');
   const isRuntimeUpdate =
-    dependencyNames.includes('@modelcontextprotocol/sdk') ||
+    isCriticalRuntimeUpdate ||
     dependencyType.includes('production') ||
     title.startsWith('chore(deps):');
   const isToolchainUpdate = dependencyNames.some(isToolchainDependency);
@@ -85,18 +86,26 @@ function classifyDependabotPr(input = {}) {
   if (isActionsUpdate) {
     risk = 'actions';
     autoMerge = false;
-    reason = 'GitHub Actions updates stay in the manual review queue.';
-  } else if (isRuntimeUpdate) {
+    reason = 'GitHub Actions updates stay in the manual review queue for security and stability.';
+  } else if (isCriticalRuntimeUpdate) {
     risk = 'runtime';
     autoMerge = false;
-    reason = 'Runtime dependency updates require manual review before merge.';
+    reason = 'Core SDK updates require manual verification of breaking changes or behavior shifts.';
+  } else if (isRuntimeUpdate) {
+    risk = 'runtime';
+    autoMerge = !isMajorUpdate;
+    reason = isMajorUpdate
+      ? 'Major runtime updates require manual review and potential code adjustments.'
+      : 'Non-major runtime updates are eligible for automated merge after CI validation.';
   } else if (isToolchainUpdate) {
     risk = 'toolchain';
-    autoMerge = false;
-    reason = 'High-impact developer tooling updates require manual review before merge.';
+    autoMerge = !isMajorUpdate;
+    reason = isMajorUpdate
+      ? 'Major toolchain upgrades require manual verification of the build and lint pipelines.'
+      : 'Non-major toolchain updates are eligible for automated merge after CI validation.';
   }
 
-  if (isMajorUpdate) {
+  if (isMajorUpdate && autoMerge) {
     autoMerge = false;
     reason = `${reason} Major version updates are never auto-merged.`;
   }
