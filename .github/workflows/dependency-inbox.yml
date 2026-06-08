@@ -3,6 +3,8 @@ name: Dependency Inbox
 on:
   schedule:
     - cron: '0 1 * * 1-5'
+  pull_request:
+    types: [closed]
   workflow_dispatch:
 
 permissions:
