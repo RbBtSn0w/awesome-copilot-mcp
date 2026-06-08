@@ -13,10 +13,8 @@ permissions:
   pull-requests: read
 
 jobs:
-  summarize:
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+  update-inbox:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v6
 
@@ -25,22 +23,19 @@ jobs:
         with:
           node-version: 22.x
 
-      - name: Collect open Dependabot PRs
+      - name: List open Dependabot PRs
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh pr list \
-            --search "author:app/dependabot state:open" \
-            --state open \
-            --json number,title,url,labels,updatedAt > open-dependabot-prs.json
+          gh pr list --search "author:app/dependabot" --state open --json number,title,url,updatedAt,labels > open-dependabot-prs.json
+          cat open-dependabot-prs.json
 
-      - name: Check automation health
+      - name: Fetch automation health
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Check the last 3 runs of critical workflows
-          gh run list --workflow upstream-sync.yml --limit 3 --json status,conclusion > upstream-sync-health.json
-          gh run list --workflow dependabot-auto-merge.yml --limit 3 --json status,conclusion > auto-merge-health.json
+          gh run list --workflow "Upstream Sync" --limit 3 --json conclusion > upstream-sync-health.json
+          gh run list --workflow "Dependabot Automation" --limit 3 --json conclusion > auto-merge-health.json
 
       - name: Render inbox markdown
         run: |
