@@ -14,6 +14,7 @@ permissions:
 
 jobs:
   summarize:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
 
     steps:
@@ -50,6 +51,7 @@ jobs:
           cat dependency-inbox.md
 
       - name: Create, update or close inbox issue
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
