@@ -47,14 +47,26 @@ jobs:
             --merge-health auto-merge-health.json > dependency-inbox.md
           cat dependency-inbox.md
 
-      - name: Create or update inbox issue
+      - name: Create, update or close inbox issue
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          ISSUE_NUMBER="$(gh issue list --search 'Dependency Inbox in:title state:open' --state open --json number --limit 1 | node -e "const issues = JSON.parse(require('fs').readFileSync(0, 'utf8')); process.stdout.write(issues.length ? String(issues[0].number) : '');")"
+          ISSUE_NUMBER="$(gh issue list --search 'Dependency Inbox in:title' --state open --json number --limit 1 | node -e "const issues = JSON.parse(require('fs').readFileSync(0, 'utf8')); process.stdout.write(issues.length ? String(issues[0].number) : '');")"
+          PR_COUNT=$(cat open-dependabot-prs.json | node -e "console.log(JSON.parse(require('fs').readFileSync(0, 'utf8')).length)")
 
-          if [ -n "$ISSUE_NUMBER" ]; then
-            gh issue edit "$ISSUE_NUMBER" --title "Dependency Inbox" --body-file dependency-inbox.md
+          if [ "$PR_COUNT" -eq 0 ]; then
+            if [ -n "$ISSUE_NUMBER" ]; then
+              echo "No open PRs. Closing inbox issue #$ISSUE_NUMBER"
+              gh issue close "$ISSUE_NUMBER" --comment "All dependencies are up to date. Closing automated dashboard."
+            else
+              echo "No open PRs and no open inbox issue. Nothing to do."
+            fi
           else
-            gh issue create --title "Dependency Inbox" --body-file dependency-inbox.md --label dependencies
+            if [ -n "$ISSUE_NUMBER" ]; then
+              echo "Updating existing inbox issue #$ISSUE_NUMBER"
+              gh issue edit "$ISSUE_NUMBER" --title "Dependency Inbox" --body-file dependency-inbox.md
+            else
+              echo "Creating new inbox issue"
+              gh issue create --title "Dependency Inbox" --body-file dependency-inbox.md --label dependencies
+            fi
           fi
