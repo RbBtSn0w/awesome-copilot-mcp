@@ -15,7 +15,7 @@ permissions:
 jobs:
   classify-pr:
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request_target' && (github.event.pull_request.user.login == 'dependabot[bot]' || github.event.pull_request.user.login == 'dependabot' || github.event.pull_request.user.login == 'app/dependabot')
+    if: github.event_name == 'pull_request_target' && github.event.pull_request.user.type == 'Bot' && contains(fromJson('["dependabot[bot]", "dependabot", "app/dependabot"]'), github.event.pull_request.user.login)
     steps:
       - uses: actions/checkout@v6
 
@@ -116,6 +116,8 @@ jobs:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       GH_REPO: ${{ github.repository }}
     steps:
+      - uses: actions/checkout@v6
+
       - name: Resolve automation PR from CI run
         id: pr
         env:
