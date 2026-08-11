@@ -104,6 +104,8 @@ describe('workflow automation contracts', () => {
     expect(workflow).toMatch(/permissions:\s*\n\s+contents:\s*write\s*\n\s+pull-requests:\s*write/);
     expect(workflow).toMatch(/SYNC_BRANCH:\s*automation\/upstream-sync/);
     expect(workflow).toContain('uses: actions/create-github-app-token@v1');
+    expect(workflow).toContain('name: Check for Upstream Updates');
+    expect(workflow).toContain('GITHUB_TOKEN: ${{ steps.app-token.outputs.token || secrets.GITHUB_TOKEN }}');
     expect(workflow).toContain('name: Validate Sync Update');
     expect(workflow).toContain('npm run ci:quality');
     expect(workflow).toContain('name: Open Sync Pull Request');

@@ -9,13 +9,18 @@ const BRANCH = 'main';
 
 function fetchLatestCommit() {
     return new Promise((resolve, reject) => {
+        const token = process.env.GITHUB_TOKEN || process.env.GH_TOKEN;
+        const headers = {
+            'User-Agent': 'awesome-copilot-mcp-sync-bot',
+            'Accept': 'application/vnd.github.v3+json'
+        };
+        if (token) {
+            headers['Authorization'] = `token ${token}`;
+        }
         const options = {
             hostname: 'api.github.com',
             path: `/repos/${UPSTREAM_REPO}/commits/${BRANCH}`,
-            headers: {
-                'User-Agent': 'awesome-copilot-mcp-sync-bot',
-                'Accept': 'application/vnd.github.v3+json'
-            }
+            headers
         };
 
         https.get(options, (res) => {
