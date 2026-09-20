@@ -9,6 +9,7 @@ A Model Context Protocol (MCP) server that provides access to [awesome-copilot](
 ## Quick Start
 
 ### One-Click Installation for VS Code
+- [Continuum-AI-Corp/OrcaReplay](https://github.com/Continuum-AI-Corp/OrcaReplay) — a single static CLI that records and replays agent–provider traffic.
 
 Click the badge to install directly in VS Code (will prompt to open VS Code):
 
