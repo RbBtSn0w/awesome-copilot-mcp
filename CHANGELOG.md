@@ -1,3 +1,22 @@
+## [0.8.8](https://github.com/RbBtSn0w/awesome-copilot-mcp/compare/v0.8.7...v0.8.8) (2026-11-05)
+
+
+### Bug Fixes
+
+* **deps:** patch critical and high advisories ([#228](https://github.com/RbBtSn0w/awesome-copilot-mcp/issues/228)) ([5478dfa](https://github.com/RbBtSn0w/awesome-copilot-mcp/commit/5478dfacc95c19cde10edd2f76aca55c5ce1b09f))
+* sync upstream data ([#200](https://github.com/RbBtSn0w/awesome-copilot-mcp/issues/200)) ([3b5d28e](https://github.com/RbBtSn0w/awesome-copilot-mcp/commit/3b5d28e74061ca6c5ec556040b6582833487193a))
+* sync upstream data ([#203](https://github.com/RbBtSn0w/awesome-copilot-mcp/issues/203)) ([0c296b6](https://github.com/RbBtSn0w/awesome-copilot-mcp/commit/0c296b61b13c74cb053297f9cd073216ded52fd9))
+* sync upstream data ([#205](https://github.com/RbBtSn0w/awesome-copilot-mcp/issues/205)) ([cb71c93](https://github.com/RbBtSn0w/awesome-copilot-mcp/commit/cb71c93b4c9ffdf0876bbd66fe7e67258ef66382))
+* sync upstream data ([#206](https://github.com/RbBtSn0w/awesome-copilot-mcp/issues/206)) ([85d96b5](https://github.com/RbBtSn0w/awesome-copilot-mcp/commit/85d96b5cdeb6987c203aed5a1c20bc4be1893dfd))
+* sync upstream data ([#207](https://github.com/RbBtSn0w/awesome-copilot-mcp/issues/207)) ([fbe47f5](https://github.com/RbBtSn0w/awesome-copilot-mcp/commit/fbe47f57af4742257121f8f86f889b3c9e6e32f2))
+* sync upstream data ([#210](https://github.com/RbBtSn0w/awesome-copilot-mcp/issues/210)) ([077341c](https://github.com/RbBtSn0w/awesome-copilot-mcp/commit/077341c6e24144169fd4ac400c4707136baf1ce3))
+* sync upstream data ([#213](https://github.com/RbBtSn0w/awesome-copilot-mcp/issues/213)) ([8c4a134](https://github.com/RbBtSn0w/awesome-copilot-mcp/commit/8c4a1346667459007b151e3f69dd985c2ccedce6))
+* sync upstream data ([#220](https://github.com/RbBtSn0w/awesome-copilot-mcp/issues/220)) ([a04364c](https://github.com/RbBtSn0w/awesome-copilot-mcp/commit/a04364c9cc6f58d8da0a5c7230f0d9524b0e8a63))
+* sync upstream data ([#221](https://github.com/RbBtSn0w/awesome-copilot-mcp/issues/221)) ([d1c329f](https://github.com/RbBtSn0w/awesome-copilot-mcp/commit/d1c329f31fea2919a9c3cac46b5bbedde36cabe7))
+* sync upstream data ([#222](https://github.com/RbBtSn0w/awesome-copilot-mcp/issues/222)) ([2f42cbe](https://github.com/RbBtSn0w/awesome-copilot-mcp/commit/2f42cbe9ca9cf8f359ba18cd2088d206c879595e))
+* sync upstream data ([#226](https://github.com/RbBtSn0w/awesome-copilot-mcp/issues/226)) ([ccfaecd](https://github.com/RbBtSn0w/awesome-copilot-mcp/commit/ccfaecd190d78aee16f856b603bb508cf5e37503))
+* sync upstream data ([#227](https://github.com/RbBtSn0w/awesome-copilot-mcp/issues/227)) ([5b5f489](https://github.com/RbBtSn0w/awesome-copilot-mcp/commit/5b5f4895bc44e9ba60d97044a7d9a22bab30c8b7))
+
 ## [0.8.7](https://github.com/RbBtSn0w/awesome-copilot-mcp/compare/v0.8.6...v0.8.7) (2026-10-08)
 
 
