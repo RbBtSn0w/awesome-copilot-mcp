@@ -104,7 +104,7 @@
     "semantic-release": "^25.0.3",
     "supertest": "^7.0.0",
     "typescript": "^5.7.3",
-    "vitest": "^3.2.6"
+    "vitest": "^5.1.0"
   },
   "overrides": {
     "tinypool": "2.1.2",
